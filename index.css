@@ -1,0 +1,86 @@
+/* Basic Reset */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9; /* Light background color */
+    color: #333;
+}
+
+header {
+    background-color: #2c3e50; /* Dark primary color */
+    color: white;
+    padding: 1rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+/* Navigation and Dropdown Setup */
+header nav {
+    display: flex;
+    align-items: center;
+}
+
+header nav a, .dropbtn {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+    padding: 0.5rem;
+    transition: color 0.3s;
+    cursor: pointer;
+}
+
+/* Main Content Styling
+    I honestly don't know if I like this format, I'll have to sleep on it.
+*/
+.site-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 5%;
+    min-height: 60vh; /* Ensures content pushes footer down a bit */
+}
+
+section {
+    background-color: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    text-align: center;
+}
+
+/* Footer Styling */
+footer {
+    background-color: #34495e; /* Slightly different dark color for contrast */
+    color: white;
+    text-align: center;
+    padding: 1rem 0;
+    margin-top: auto; /* Helps push footer to the bottom if content is small */
+}
+
+/* Basic responsiveness adjustments */
+@media (max-width: 768px) {
+    .site-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    .site-header h1 {
+        margin-bottom: 20px;
+    }
+    /* For mobile, we need to adjust the dropdown handling significantly or use JavaScript.
+       For CSS hover effects on mobile touchscreens, they are often unreliable/impossible. */
+    .dropdown {
+        display: block; /* Show it by default for easier testing on small screens if needed, though JS is recommended for full functionality */
+    }
+    .dropdown-content {
+        position: relative; /* Allows better stacking context on mobile */
+        display: none;
+    }
+}
