@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Minesweeper</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="shortcut icon" href="favicon.png" type="image/x-icon">
+</head>
+
+<body onload="LoadStuff()">
+    <div id="images">
+        <img src="mine image.png" alt="mine image" id="redMine">
+        <img src="flag.png" alt="flag" id="flag">
+        <img src="1.png" alt="1" id="1">
+        <img src="2.png" alt="2" id="2">
+        <img src="3.png" alt="3" id="3">
+        <img src="4.png" alt="4" id="4">
+        <img src="5.png" alt="5" id="5">
+        <img src="6.png" alt="6" id="6">
+        <img src="7.png" alt="7" id="7">
+        <img src="8.png" alt="8" id="8">
+    </div>
+    <canvas id="canvas"></canvas>
+    <button id="restart" onclick="LoadStuff()">restart</button>
+    <script src="index.js"></script>
+    <input type="text" id="viewBox" oninput="refreshSliders()">
+    <input type="range" value="10" title="number of boxes" id="slideBox" oninput="refreshSliders()">
+    <input type="text" id="viewMine" oninput="refreshSliders()">
+    <input type="range" value="10" title="mines" id="slideMine" oninput="refreshSliders()">
+    <input type="text" id="viewScale" oninput="refreshSliders()">
+    <input type="range" value="30" title="scale" id="slideScale" oninput="refreshSliders()">
+    <div id="YouWin">You Winnnn!!!!!!!! :)</div>
+
+</body>
+
+</html>

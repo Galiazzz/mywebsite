@@ -1,0 +1,1084 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Logic simulator</title>
+    <style>
+        html,
+        body,
+        canvas {
+            height: 100%;
+            width: 100%;
+            margin: 0%;
+            padding: 0%;
+            overflow: hidden;
+        }
+
+        canvas {
+            background-color: rgb(0, 11, 61);
+        }
+
+        #selections {
+            position: absolute;
+            width: 100%;
+            height: 30%;
+            top: 90%;
+            background-color: #525252;
+            text-align: center;
+            transition-duration: 300ms;
+            overflow: auto;
+        }
+
+        #selections:hover {
+            top: 70%;
+        }
+
+        #selections span {
+            margin-right: 5%;
+        }
+
+        #selections span button {
+            padding: 1%;
+        }
+
+        #createButton {
+            background-color: orange;
+            display: block;
+            margin-top: 2em;
+            position: absolute;
+            left: 40%;
+        }
+
+        .hamburger {
+            width: 8%;
+            height: 4%;
+            background-color: gray;
+            margin: 1%;
+        }
+
+        #componants {
+            display: inline-block;
+            overflow: hidden;
+            white-space: nowrap;
+            width: 70%;
+
+            font-size: 1em;
+            font-family: sans-serif;
+        }
+
+        #componants:hover {
+            overflow: auto;
+        }
+
+        #properties {
+            position: absolute;
+            top: -20%;
+            left: 0%;
+            right: 100%;
+            bottom: 20%;
+
+            height: 20%;
+            width: 100%;
+
+            transition-duration: 300ms;
+
+            text-align: center;
+
+            background-color: #525252;
+
+            overflow: auto;
+        }
+    </style>
+</head>
+
+<body onload="LoadStuff()">
+    <canvas id="canvas"></canvas>
+    <div id="properties">
+
+    </div>
+    <div id="selections">
+        <div class="hamburger"></div>
+        <div class="hamburger"></div>
+        <div class="hamburger"></div>
+
+        <div id="componants">
+        </div>
+        <button id="createButton" style="display: none;">Create componant</button>
+    </div>
+    <script>
+        //way to know index of keys
+        const keyCodes = {
+            up: 0,
+            down: 1,
+            left: 2,
+            right: 3,
+            control: 4,
+        }
+
+        //types of componants
+        const componantTypes = {
+            normal: 0,
+            light: 1,
+            switch: 2,
+        }
+
+        //types of logic that each componant is made up of
+        const logicTypes = {
+            inAnd: 0,
+            inNot: 1,
+            inOr: 2,
+            inPass: 3,
+            and: 4,
+            not: 5,
+            or: 6,
+            pass: 7,
+        }
+
+        //setting things up
+        var canvas = document.getElementById("canvas");
+        var ctx = canvas.getContext("2d");
+        canvas.height = window.innerHeight;
+        canvas.width = window.innerWidth;
+
+        //used for moving the camera around
+        var worldOff = [0, 0];
+        //not used at the moment
+        var zoom = 1;
+
+        //used to access the keys with the keycodes object
+        var keysDown = [false, false, false, false];
+
+        //used in dragging
+        var previousPoint = [];
+        //the current position of the cursor
+        var currentPoint = [];
+        //pretty self explanatory
+        var isDragging = false;
+        var isDraggingWire = false;
+        //for selecting multiple compunants
+        var isSelectingRegion = false;
+        //used for dragging wires, stores the previous output node
+        var previousNode = null;
+
+        //list of the possible componants to chose from
+        var avalibleComponants = [];
+        // used for deleteing componants
+        var emptyIndicies = [];
+        //used for selecting componants from the avalible componants tab
+        var createComponantsSelectionIndex = 0;
+        //number of avalible componants
+        var numAvalibleComponants = 0;
+        //can the user place a componant
+        var canPlace = null;
+        //the heart of the program, the list of the componants
+        var componants = [];
+        //used for dragging componants
+        var boundingSelectionIndex = null;
+        //used with control+c, control+v i.e. place to hold componants in the meanwhile
+        var copiedComponants = [];
+
+        function LoadStuff() {
+            //create the base componants
+            AddToComponantsTab(new Componant(0, 0, 0, 1, [100, 100, 100, 1], "Switch", componantTypes.switch, []));
+            AddToComponantsTab(new Componant(0, 0, 1, 0, [100, 100, 0, 1], "Light", componantTypes.light, []));
+
+            AddToComponantsTab(new Componant(0, 0, 2, 1, [0, 0, 255, 1], "And", componantTypes.normal, [[[logicTypes.inAnd, 0, 1, null, null, false]]]));
+            AddToComponantsTab(new Componant(0, 0, 1, 1, [255, 0, 0, 1], "Not", componantTypes.normal, [[[logicTypes.inNot, 0, null, null, null, false]]]));
+            AddToComponantsTab(new Componant(0, 0, 2, 1, [0, 255, 0, 1], "Or", componantTypes.normal, [[[logicTypes.inOr, 0, 1, null, null, false]]]));
+
+            AddToComponantsTab(new Componant(0, 0, 1, 2, [255, 255, 255, 1], "Splitter", componantTypes.normal, [[[logicTypes.inPass, 0, null, null, null, false], [logicTypes.inPass, 0, null, null, null, false]]]));
+
+            //set the update clock to run 100 times a second or as fast as it can
+            setInterval(function () {
+                Update();
+            }, 10);
+
+            //start the rendering loop (as fast as possible)
+            requestAnimationFrame(Draw);
+        }
+
+        function Update() {
+            //move camera around the world
+            if (keysDown[keyCodes.up]) {
+                worldOff[1] += 5;
+            }
+            if (keysDown[keyCodes.down]) {
+                worldOff[1] -= 5;
+            }
+            if (keysDown[keyCodes.right]) {
+                worldOff[0] -= 5;
+            }
+            if (keysDown[keyCodes.left]) {
+                worldOff[0] += 5;
+            }
+            //helpful for placeing multiple componants
+            if (keysDown[keyCodes.control]) {
+                canPlace = true;
+            }
+
+            //update each of the individual componants if they exist
+            for (var i = 0; i < componants.length; i++) {
+                if (componants[i] == null) { continue; }
+
+                componants[i].Update();
+            }
+        }
+
+        function Draw() {
+            //clear the screen
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            //draw each of the componants if they exist
+            for (var i = 0; i < componants.length; i++) {
+                if (componants[i] == null) { continue; }
+
+                componants[i].Draw();
+            }
+            //renders the createing of a new wire
+            if (isDraggingWire) {
+                ctx.beginPath();
+                ctx.moveTo(previousPoint[0], previousPoint[1]);
+                ctx.lineTo(currentPoint[0], currentPoint[1]);
+                ctx.stroke();
+            }
+            //renders multi-selection box
+            if (isSelectingRegion) {
+                var pastStrokeColor = ctx.strokeStyle;
+                ctx.strokeStyle = "yellow";
+                ctx.fillStyle = "rgba(255, 255, 0, .1)";
+                ctx.strokeRect(previousPoint[0], previousPoint[1], currentPoint[0] - previousPoint[0], currentPoint[1] - previousPoint[1]);
+                ctx.fillRect(previousPoint[0], previousPoint[1], currentPoint[0] - previousPoint[0], currentPoint[1] - previousPoint[1]);
+                ctx.strokeStyle = pastStrokeColor;
+            }
+
+            //somthing else that I cannot remember what I used for ¯\_(ツ)_/¯
+            ctx.font = "20px Arial";
+
+            //render the nex frame once this one is finished being drawn
+            requestAnimationFrame(Draw);
+        }
+
+        //a helpful utility function
+        function RandValue(min = 0, max = 1, isInteger = false) {
+            return isInteger ? Math.floor(Math.random() * (max - min) + min) : Math.random() * (max - min) + min;
+        }
+
+        //used for displaying the properties of a componant
+        function DisplayProperties(componant) {
+            var propertiesDisplay = document.getElementById("properties");
+            propertiesDisplay.innerHTML =
+                `
+        <h1>${componant.name}</h1>
+        <p>
+        x-position: ${componant.boundingBox.x}, y-position: ${componant.boundingBox.y}, width: ${componant.boundingBox.width}, 
+        number of inputs: ${componant.numInputs}, number of outputs: ${componant.numOutputs}, color: rgba(${componant.color[0]}, ${componant.color[1]}, ${componant.color[2]}, ${componant.color[3]}),
+        type: ${componant.type}
+        </p>
+    `
+        }
+
+        //adds a componant to the avilbe componants tab
+        function AddToComponantsTab(componant) {
+            var el = document.getElementById("componants");
+            el.innerHTML += `<span><button style = "background-color: rgba(${componant.color[0]}, ${componant.color[1]}, ${componant.color[2]}, ${componant.color[3]})" onclick = "createComponantsSelectionIndex = ${numAvalibleComponants}; canPlace = true;">${componant.name}</button></span>`;
+            avalibleComponants.push(new Componant(componant.x, componant.y, componant.numInputs, componant.numOutputs, componant.color, componant.name, componant.type, componant.logicPath));
+            numAvalibleComponants++;
+        }
+
+        //not quite working yet
+        document.getElementById("createButton").onclick = () => {
+            var numInputs = 0;
+            var numOutputs = 0;
+            var logicLayout = [];
+
+            var explore = [];
+            for (var i = 0; i < componants.length; i++) {
+                if (componants[i] == null) { continue; }
+
+                if (componants[i].isSelected) {
+                    for (var n = 0; n < componants[i].numInputs; n++) {
+                        if (componants[i].inputValues[n][1] == null || !componants[componants[i].inputValues[n][1]].isSelected) {
+                            numInputs++;
+                            var hasFound = false;
+                            for (var j = 0; j < explore.length; j++) {
+                                if (explore[0][0] == i) {
+                                    hasFound = true
+                                    break;
+                                }
+                            }
+                            if (!hasFound) {
+                                explore.push([i, 0]);
+                            }
+                        }
+                    }
+                    for (var n = 0; n < componants[i].numOutputs; n++) {
+                        if (componants[i].outputValues[n][1] == null || !componants[componants[i].outputValues[n][1]].isSelected) {
+                            numOutputs++;
+                        }
+                    }
+                }
+            }
+
+            for (var i = 0; i < explore.length; i++) {
+                var nextStep = [];
+                for (var n = 0; n < componants[explore[i][0]].numOutputs; n++) {
+                    if (componants[explore[i][0]].outputValues[n][1] != null) {
+                        if (componants[componants[explore[i][0]].outputValues[n][1]].isSelected) {
+                            nextStep.push(componants[explore[i][0]].outputValues[n][1]);
+                        }
+                    }
+                }
+                while (nextStep.length > 0) {
+                    var step = [];
+                    for (var j = 0; j < nextStep.length; j++) {
+                        for (var n = 0; n < componants[nextStep[j]].numOutputs; n++) {
+                            if (componants[nextStep[j]].outputValues[n][1] != null) {
+                                if (componants[componants[nextStep[j]].outputValues[n][1]].isSelected) {
+                                    step.push(componants[nextStep[j]].outputValues[n][1]);
+                                }
+                            }
+                        }
+                    }
+
+                    nextStep.length = 0;
+                    nextStep = step;
+                    explore[i][1]++;
+                }
+            }
+
+            var usedInput = 0;
+            explore.sort(function (a, b) { return b[1] - a[1] });
+            var outputs = [];
+            for (var i = 0; i < explore.length; i++) {
+                logicLayout.push([]);
+                for (var n = 0; n < componants[explore[i][0]].logicPath.length; n++) {
+                    for (var j = 0; j < componants[explore[i][0]].logicPath[n].length; j++) {
+                        var arr = [];
+                        for (var k = 0; k < 6; k++) {
+                            arr[k] = componants[explore[i][0]].logicPath[n][j][k];
+                        }
+                        if (arr[0] <= logicTypes.inPass) {
+                            arr[1] += usedInput;
+                            if (arr[2] != null) {
+                                arr[2] += usedInput;
+                            }
+                        }
+                        else {
+
+                        }
+
+                        if (n == componants[explore[i][0]].logicPath.length - 1) {
+                            outputs.push([i, j]);
+                        }
+                        logicLayout[i].push(arr);
+                    }
+                }
+                usedInput += componants[explore[i][0]].numInputs;
+            }
+
+            logicLayout.push([]);
+            for (var i = 0; i < outputs.length; i++) {
+                logicLayout[logicLayout.length - 1].push([logicTypes.pass, outputs[i][0], outputs[i][1], null, null, false]);
+            }
+            if (numInputs > 0 && numOutputs > 0) {
+                var name = prompt("name your componant");
+                AddToComponantsTab(new Componant(0, 0, numInputs, numOutputs, [RandValue(0, 255, true), RandValue(0, 255, true), RandValue(0, 255, true), 1], name, componantTypes.normal, logicLayout))
+            }
+
+        }
+
+        //this whole block finds the distance from a point to line segment (used in deleteing individual wires)
+        function sqr(x) { return x * x }
+        function dist2(v, w) { return sqr(v.x - w.x) + sqr(v.y - w.y) }
+        function DistToSegmentSquared(p, v, w) {
+            var l2 = dist2(v, w);
+            if (l2 == 0) return dist2(p, v);
+            var t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+            t = Math.max(0, Math.min(1, t));
+            return dist2(p, {
+                x: v.x + t * (w.x - v.x),
+                y: v.y + t * (w.y - v.y)
+            });
+        }
+        function DistToSegment(p, v, w) { return Math.sqrt(DistToSegmentSquared(p, v, w)); }
+
+
+        //the dragable bounding box of a componant
+        function BoundingRect(x, y, width, height) {
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+
+            this.clickOffset = [];
+
+            this.IsPointInside = function (pointX, pointY) {
+                return pointX > this.x && pointX < this.x + this.width && pointY > this.y && pointY < this.y + this.height;
+            }
+        }
+
+        //not used but I kept it in here
+        function LogicComponant(inputType, readLocation, secondReadLocation = null, outputLocation = null) {
+            this.inputType = inputType;
+            this.readLocation = readLocation;
+            this.secondReadLocation = secondReadLocation;
+            this.outputLocation = outputLocation;
+            this.output = false;
+
+            this.Update = function () {
+                switch (this.inputType) {
+                    case logicTypes.inAnd:
+                        this.output = this.readLocation[0] && this.secondReadLocation[0];
+                        break;
+                    case logicTypes.inNot:
+                        this.output = !this.readLocation[0];
+                        break;
+                    case logicTypes.inOr:
+                        this.output = this.readLocation[0] || this.secondReadLocation[0];
+                        break;
+                    case logicTypes.inPass:
+                        this.output = this.readLocation[0];
+                        break;
+                    case logicTypes.and:
+                        this.output = this.readLocation.output && this.secondReadLocation.output;
+                        break;
+                    case logicTypes.not:
+                        this.output = !this.readLocation.output;
+                        break;
+                    case logicTypes.or:
+                        this.output = this.readLocation.output || this.secondReadLocation.output;
+                        break;
+                    case logicTypes.pass:
+                        this.output = this.readLocation.output;
+                        break;
+                }
+
+                if (this.outputLocation != null) {
+                    this.outputLocation[0] = this.output;
+                }
+            }
+        }
+
+        //the base class for a componant
+        function Componant(x, y, numInputs, numOutputs, colorArr, name, type, logicPath) {
+            //the draggable bounding box
+            this.boundingBox = new BoundingRect(x, y, ctx.measureText(name).width + 50, Math.max(numInputs, numOutputs) * 25);
+            //the number of inputs
+            this.numInputs = numInputs;
+            //the acual inputs
+            this.inputValues = [];
+            //the number of outputs
+            this.numOutputs = numOutputs;
+            //the accual outputs
+            this.outputValues = [];
+            //the color
+            this.color = colorArr;
+            //the other color (not used apparently ¯\_(ツ)_/¯)
+            this.otherColor = colorArr;
+            //the name of the componant
+            this.name = name;
+            //the type of the componant in componantTypes
+            this.type = type;
+            //the path that logic takes through the componant
+            this.logicPath = logicPath;
+            //if it is actvated (only used in lights and switches)
+            this.isActivated = false;
+            //if it is selected
+            this.isSelected = false;
+            //distance from an input (used in copying/pasting and createing new componants)
+            this.distFromInput = 0;
+
+            //if it is a light or a switch, give it a custom bounding box
+            if (this.type == componantTypes.switch || this.type == componantTypes.light) {
+                this.boundingBox = new BoundingRect(x, y, 50, 50);
+            }
+
+            //initialized the inputs with nodeActive, inComponantIndex, outputIndex
+            for (var i = 0; i < this.numInputs; i++) {
+                this.inputValues[i] = [false, null, null];
+            }
+            //initialzes the outputs with nodeActive, outComponantIndex, inputIndex, isSelected
+            for (var i = 0; i < this.numOutputs; i++) {
+                this.outputValues[i] = [false, null, null, false];
+            }
+
+            this.Update = function () {
+                //loops through all of the logic componants and updates them, in the final version the logic componants
+                //will have to have their array buffered
+                for (var i = 0; i < this.logicPath.length; i++) {
+                    for (var n = 0; n < this.logicPath[i].length; n++) {
+                        //a guide for the layout of the logic componants
+                        /*[[[inAnd, inindex1, inindex2, not used, not used, output]]]
+                        [[[inNot, inindex1, not used, not used, not used, output]]]
+                        [[[inOr, inindex1, inindex2, not used, not used, output]]]
+                        [[[inPass, inindex1, not used, not used, not used, output]]]
+                        [[[and, lPath1i, lPath1n, lPath2i, lPath2n, output]]]
+                        [[[not, lPath1i, lPath1n, not used, not used, output]]]
+                        [[[or, lPath1i, lPath1n, lPath2i, lPath2n, output]]]
+                        [[[pass, lPath1i, lPath1n, not used, not used, output]]]*/
+
+                        switch (this.logicPath[i][n][0]) {
+                            case logicTypes.inAnd:
+                                this.logicPath[i][n][5] = this.inputValues[this.logicPath[i][n][1]][0] && this.inputValues[this.logicPath[i][n][2]][0];
+                                break;
+                            case logicTypes.inNot:
+                                this.logicPath[i][n][5] = !this.inputValues[this.logicPath[i][n][1]][0];
+                                break;
+                            case logicTypes.inOr:
+                                this.logicPath[i][n][5] = this.inputValues[this.logicPath[i][n][1]][0] || this.inputValues[this.logicPath[i][n][2]][0];
+                                break;
+                            case logicTypes.inPass:
+                                this.logicPath[i][n][5] = this.inputValues[this.logicPath[i][n][1]][0];
+                                break;
+                            case logicTypes.and:
+                                this.logicPath[i][n][5] = this.logicPath[this.logicPath[i][n][1]][this.logicPath[i][n][2]][5] && this.logicPath[this.logicPath[i][n][3]][this.logicPath[i][n][4]][5];
+                                break;
+                            case logicTypes.not:
+                                this.logicPath[i][n][5] = !this.logicPath[this.logicPath[i][n][1]][this.logicPath[i][n][2]][5];
+                                break;
+                            case logicTypes.or:
+                                this.logicPath[i][n][5] = this.logicPath[this.logicPath[i][n][1]][this.logicPath[i][n][2]][5] || this.logicPath[this.logicPath[i][n][3]][this.logicPath[i][n][4]][5];
+                                break;
+                            case logicTypes.pass:
+                                this.logicPath[i][n][5] = this.logicPath[this.logicPath[i][n][1]][this.logicPath[i][n][2]][5];
+                                break;
+                        }
+                    }
+                }
+
+                //identifies the output layer and lights up the conected outputs and inputs respectively will change in future
+                if (this.logicPath.length > 0) {
+                    for (var i = 0; i < this.numOutputs; i++) {
+                        this.outputValues[i][0] = this.logicPath[this.logicPath.length - 1][i][5];
+                        if (this.outputValues[i][1] != null) {
+                            componants[this.outputValues[i][1]].inputValues[this.outputValues[i][2]][0] = this.outputValues[i][0];
+                        }
+                    }
+                }
+
+                //custom behavior for the light and switch
+                if (this.type != componantTypes.normal) {
+                    if (this.type == componantTypes.light) {
+                        this.isActivated = this.inputValues[0][0];
+                    }
+                    if (this.type == componantTypes.switch) {
+                        this.outputValues[i][0] = this.isActivated;
+                        if (this.outputValues[i][1] != null) {
+                            componants[this.outputValues[i][1]].inputValues[this.outputValues[i][2]][0] = this.outputValues[i][0];
+                        }
+                    }
+                }
+            }
+
+            this.Draw = function () {
+                //draws the main rectangle
+                var prevColor = ctx.fillStyle;
+                ctx.fillStyle = `rgba(${this.color[0]}, ${this.color[1]}, ${this.color[2]}, ${this.color[3]})`;
+                ctx.fillRect(this.boundingBox.x + worldOff[0], this.boundingBox.y + worldOff[1], this.boundingBox.width, this.boundingBox.height);
+                //draws the input nodes (connections) empty if not active green if active
+                ctx.strokeStyle = "white";
+                for (var i = 0; i < this.numInputs; i++) {
+                    ctx.beginPath();
+                    var point = [this.boundingBox.x - 30 + worldOff[0], this.boundingBox.y + (this.boundingBox.height / this.numInputs) * i + (this.boundingBox.height / this.numInputs) / 2 + worldOff[1]];
+                    ctx.arc(point[0], point[1], 10, 0, 2 * Math.PI);
+                    if (this.inputValues[i][0]) {
+                        ctx.fillStyle = "green";
+                        ctx.fill();
+                    }
+                    else {
+                        ctx.stroke();
+                    }
+                    ctx.moveTo(point[0] + 10, point[1]);
+                    ctx.lineTo(point[0] + 30, point[1]);
+                    ctx.stroke();
+                }
+
+                for (var i = 0; i < this.numOutputs; i++) {
+                    //same thing but for the output nodes
+                    ctx.beginPath();
+                    var point = [this.boundingBox.x + this.boundingBox.width + 30 + worldOff[0], this.boundingBox.y + (this.boundingBox.height / this.numOutputs) * i + (this.boundingBox.height / this.numOutputs) / 2 + worldOff[1]];
+                    ctx.arc(point[0], point[1], 10, 0, 2 * Math.PI);
+                    if (this.outputValues[i][0]) {
+                        ctx.fillStyle = "green";
+                        ctx.fill();
+                    }
+                    else {
+                        ctx.stroke();
+                    }
+                    ctx.moveTo(point[0] - 10, point[1]);
+                    ctx.lineTo(point[0] - 30, point[1]);
+                    ctx.stroke();
+
+                    //draws the connections between nodes
+                    if (this.outputValues[i][1] != null) {
+                        ctx.beginPath();
+
+                        var endPoint = [
+                            componants[this.outputValues[i][1]].boundingBox.x - 30 + worldOff[0],
+                            componants[this.outputValues[i][1]].boundingBox.y + (componants[this.outputValues[i][1]].boundingBox.height / componants[this.outputValues[i][1]].numInputs) * this.outputValues[i][2] + (componants[this.outputValues[i][1]].boundingBox.height / componants[this.outputValues[i][1]].numInputs) / 2 + worldOff[1]
+                        ];
+
+                        var prevStrokeColor = ctx.strokeStyle;
+
+                        if (this.outputValues[i][3]) {
+                            ctx.lineWidth = 8;
+                            ctx.strokeStyle = "yellow";
+                            ctx.moveTo(point[0], point[1]);
+                            ctx.lineTo(endPoint[0], endPoint[1]);
+                            ctx.stroke();
+                        }
+
+                        if (this.outputValues[i][0]) {
+                            ctx.strokeStyle = `rgb(${((componants[this.outputValues[i][1]].color[0] + this.color[0]) / 2)}, ${((componants[this.outputValues[i][1]].color[1] + this.color[1]) / 2)}, ${((componants[this.outputValues[i][1]].color[2] + this.color[2]) / 2)})`;
+                        }
+                        else {
+                            ctx.strokeStyle = `rgb(${255 - ((componants[this.outputValues[i][1]].color[0] + this.color[0]) / 2)}, ${255 - ((componants[this.outputValues[i][1]].color[1] + this.color[1]) / 2)}, ${255 - ((componants[this.outputValues[i][1]].color[2] + this.color[2]) / 2)})`;
+                        }
+
+
+                        ctx.lineWidth = 4;
+                        ctx.moveTo(point[0], point[1]);
+                        ctx.lineTo(endPoint[0], endPoint[1]);
+                        ctx.stroke();
+                        ctx.lineWidth = 1;
+                        ctx.strokeStyle = prevStrokeColor;
+                    }
+                }
+
+                if (this.type == componantTypes.normal) {
+                    //draw the name
+                    ctx.fillStyle = "black";
+                    ctx.fillText(this.name, this.boundingBox.x + worldOff[0] + ((this.boundingBox.width - ctx.measureText(name).width) / 2), this.boundingBox.y + worldOff[1] + this.boundingBox.height / 2);
+                }
+                else {
+                    if (this.type == componantTypes.light) {
+                        //draw the parts of the light
+                        var prevFill = ctx.fillStyle;
+                        var prevStrokeColor = ctx.strokeStyle;
+                        ctx.beginPath();
+                        ctx.arc(this.boundingBox.x + worldOff[0] + 25, this.boundingBox.y + worldOff[1] + 25, 25, 0, 2 * Math.PI);
+                        ctx.fillStyle = this.isActivated ? "yellow" : "rgb(50, 50, 50)";
+                        ctx.fill();
+                        ctx.strokeStyle = "grey";
+                        ctx.stroke();
+                        ctx.fillStyle = prevFill;
+                        ctx.strokeStyle = prevStrokeColor;
+                    }
+                    else if (this.type == componantTypes.switch) {
+                        //draw the parts of the switch
+                        var prevFill = ctx.fillStyle;
+                        var prevStrokeColor = ctx.strokeStyle;
+                        ctx.beginPath();
+                        ctx.arc(this.boundingBox.x + worldOff[0] + 25, this.boundingBox.y + worldOff[1] + 25, 20, 0, 2 * Math.PI);
+                        ctx.fillStyle = this.isActivated ? "rgb(150, 150, 150)" : "rgb(50, 50, 50)";
+                        ctx.fill();
+                        ctx.strokeStyle = "grey";
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.arc(this.boundingBox.x + worldOff[0] + 46, this.boundingBox.y + worldOff[1] + 46, 3, 0, 2 * Math.PI);
+                        ctx.fillStyle = this.isActivated ? "rgb(200, 0, 0)" : "rgb(50, 0, 0)";
+                        ctx.fill();
+                        ctx.stroke();
+                        ctx.fillStyle = prevFill;
+                        ctx.strokeStyle = prevStrokeColor;
+                    }
+                }
+
+                //give the thing a outline if it is selected
+                if (this.isSelected) {
+                    var previousStrokeColor = ctx.fillStyle;
+                    ctx.strokeStyle = "yellow";
+                    ctx.strokeRect(this.boundingBox.x + worldOff[0], this.boundingBox.y + worldOff[1], this.boundingBox.width, this.boundingBox.height);
+                    ctx.strokeStyle = previousStrokeColor;
+                }
+
+                ctx.fillStyle = prevColor;
+            }
+        }
+
+        //prevents right-clicking on the canvas createing an option menu
+        canvas.oncontextmenu = function (e) {
+            e.preventDefault();
+        };
+
+        canvas.addEventListener("mousedown", function (e) {
+            //if a componant is selected, make it no longer selected
+            for (var i = 0; i < componants.length; i++) {
+                if (componants[i] == null) { continue; }
+
+                componants[i].isSelected = false;
+            }
+
+            //sets the previous point
+            previousPoint = [e.clientX, e.clientY];
+            //if no bounding box is being dragged, check to see if one is being dragged
+            if (boundingSelectionIndex == null) {
+                for (var i = 0; i < componants.length; i++) {
+                    if (componants[i] == null) { continue; }
+
+                    var b = componants[i];
+                    if (b.boundingBox.IsPointInside(e.clientX - worldOff[0], e.clientY - worldOff[1])) {
+                        isDragging = true;
+                        b.boundingBox.clickOffset = [b.boundingBox.x - previousPoint[0], b.boundingBox.y - previousPoint[1]];
+                        boundingSelectionIndex = i;
+
+                        if (b.type == componantTypes.switch) {
+                            if (Math.sqrt(sqr((b.boundingBox.x + 20) - (e.clientX - worldOff[0])) + sqr((b.boundingBox.y + 20) - (e.clientY - worldOff[1]))) < 20) {
+                                switch (b.isActivated) {
+                                    case true: b.isActivated = false; break;
+                                    case false: b.isActivated = true; break;
+                                }
+                            }
+                        }
+
+                        if (e.button == 2) {
+                            document.getElementById("properties").style.top = "0%";
+                            componants[i].isSelected = true;
+                            DisplayProperties(componants[i]);
+                        }
+                        break;
+                    }
+                    //if the user selects a wire, select it
+                    for (var n = 0; n < b.numOutputs; n++) {
+                        var point = [b.boundingBox.x + b.boundingBox.width + 30 + worldOff[0], b.boundingBox.y + (b.boundingBox.height / b.numOutputs) * n + (b.boundingBox.height / b.numOutputs) / 2 + worldOff[1]];
+                        if (Math.sqrt((point[0] - previousPoint[0]) * (point[0] - previousPoint[0]) + (point[1] - previousPoint[1]) * (point[1] - previousPoint[1])) < 10) {
+                            previousPoint = point;
+                            isDraggingWire = true;
+                            previousNode = [i, n];
+                            return;
+                        }
+                        if (b.outputValues[n][1] != null && b.outputValues[n][2] != null) {
+                            var endPoint = [
+                                componants[b.outputValues[n][1]].boundingBox.x - 30 + worldOff[0],
+                                componants[b.outputValues[n][1]].boundingBox.y + (componants[b.outputValues[n][1]].boundingBox.height / componants[b.outputValues[n][1]].numInputs) * b.outputValues[n][2] + (componants[b.outputValues[n][1]].boundingBox.height / componants[b.outputValues[n][1]].numInputs) / 2 + worldOff[1]
+                            ];
+                            componants[i].outputValues[n][3] = false;
+                            if (DistToSegmentSquared({ x: e.clientX, y: e.clientY }, { x: point[0], y: point[1] }, { x: endPoint[0], y: endPoint[1] }) < 25) {
+                                componants[i].outputValues[n][3] = true;
+                            }
+                        }
+                    }
+                }
+            }
+            //if nothing is selected, declutter screen and add a new componant if desired
+            if (boundingSelectionIndex == null) {
+                document.getElementById("properties").style.top = "-20%";
+                document.getElementById("properties").innerText = "";
+                if (canPlace && e.clientY < canvas.height) {
+                    var com = avalibleComponants[createComponantsSelectionIndex];
+                    if (emptyIndicies.length > 0) {
+                        componants[emptyIndicies[0]] = new Componant(e.clientX - worldOff[0], e.clientY - worldOff[1], com.numInputs, com.numOutputs, com.color, com.name, com.type, com.logicPath);
+                        emptyIndicies.shift();
+                    }
+                    else {
+                        var foo = new Componant(e.clientX - worldOff[0], e.clientY - worldOff[1], com.numInputs, com.numOutputs, com.color, com.name, com.type, com.logicPath);
+                        componants.push(foo);
+                    }
+                    canPlace = false;
+                }
+                else {
+                    isSelectingRegion = true;
+                }
+            }
+
+        });
+        document.addEventListener("mousemove", function (e) {
+            //set the current point to the current location of the mouse
+            currentPoint = [e.clientX, e.clientY];
+            //move the dragged componant if one is being dragged
+            if (isDragging) {
+                if (boundingSelectionIndex != null) {
+                    componants[boundingSelectionIndex].boundingBox.x = e.clientX + componants[boundingSelectionIndex].boundingBox.clickOffset[0];
+                    componants[boundingSelectionIndex].boundingBox.y = e.clientY + componants[boundingSelectionIndex].boundingBox.clickOffset[1];
+                }
+            }
+        });
+        canvas.addEventListener("mouseup", function (e) {
+            //connect nodes with a wire if one is being created
+            if (isDraggingWire) {
+                for (var i = 0; i < componants.length; i++) {
+                    if (componants[i] == null) { continue; }
+
+                    var b = componants[i];
+                    for (var n = 0; n < b.numInputs; n++) {
+                        var point = [b.boundingBox.x - 30 + worldOff[0], b.boundingBox.y + (b.boundingBox.height / b.numInputs) * n + (b.boundingBox.height / b.numInputs) / 2 + worldOff[1]];
+                        if (Math.sqrt((point[0] - e.clientX) * (point[0] - e.clientX) + (point[1] - e.clientY) * (point[1] - e.clientY)) < 10) {
+                            componants[previousNode[0]].outputValues[previousNode[1]] = [false, i, n];
+                            componants[i].inputValues[n][1] = previousNode[0];
+                            componants[i].inputValues[n][2] = previousNode[1];
+                            break;
+                        }
+                    }
+                }
+            }
+            //select all componants touching that region 
+            if (isSelectingRegion) {
+                for (var i = 0; i < componants.length; i++) {
+                    if (componants[i] == null) { continue; }
+
+                    if (componants[i].boundingBox.x + worldOff[0] < Math.max(previousPoint[0], currentPoint[0]) && componants[i].boundingBox.x + componants[i].boundingBox.width + worldOff[0] > Math.min(previousPoint[0], currentPoint[0])
+                        && componants[i].boundingBox.y + worldOff[1] < Math.max(previousPoint[1], currentPoint[1]) && componants[i].boundingBox.y + componants[i].boundingBox.height + worldOff[1] > Math.min(previousPoint[1], currentPoint[1])) {
+                        componants[i].isSelected = true;
+                    }
+                }
+            }
+
+            //reset everything
+            isDragging = false;
+            isDraggingWire = false;
+            isSelectingRegion = false;
+            boundingSelectionIndex = null;
+        });
+
+        document.addEventListener("keydown", function (e) {
+            if (e.key == "ArrowUp") {
+                keysDown[keyCodes.up] = true;
+            }
+            if (e.key == "ArrowDown") {
+                keysDown[keyCodes.down] = true;
+            }
+            if (e.key == "ArrowRight") {
+                keysDown[keyCodes.right] = true;
+            }
+            if (e.key == "ArrowLeft") {
+                keysDown[keyCodes.left] = true;
+            }
+            if (e.key == "Control") {
+                keysDown[keyCodes.control] = true;
+            }
+
+            if (e.key == "Backspace") {
+                e.preventDefault();
+                for (var i = 0; i < componants.length; i++) {
+                    if (componants[i] == null) { continue; }
+
+                    for (var n = 0; n < componants[i].numOutputs; n++) {
+                        if (componants[i].outputValues[n][3]) {
+                            componants[componants[i].outputValues[n][1]].inputValues[componants[i].outputValues[n][2]][1] = null;
+                            componants[componants[i].outputValues[n][1]].inputValues[componants[i].outputValues[n][2]][2] = null;
+
+                            componants[i].outputValues[n][1] = null;
+                            componants[i].outputValues[n][2] = null;
+                            componants[i].outputValues[n][3] = false;
+                        }
+                    }
+                    if (componants[i].isSelected) {
+                        for (var n = 0; n < componants[i].numInputs; n++) {
+                            if (componants[i].inputValues[n][1] != null) {
+                                componants[componants[i].inputValues[n][1]].outputValues[componants[i].inputValues[n][2]][1] = null;
+                                componants[componants[i].inputValues[n][1]].outputValues[componants[i].inputValues[n][2]][2] = null;
+                            }
+                        }
+                        for (var n = 0; n < componants[i].numOutputs; n++) {
+                            if (componants[i].outputValues[n][1] != null) {
+                                componants[componants[i].outputValues[n][1]].inputValues[componants[i].outputValues[n][2]][1] = null;
+                                componants[componants[i].outputValues[n][1]].inputValues[componants[i].outputValues[n][2]][2] = null;
+                            }
+
+                            componants[i].outputValues[n][1] = null;
+                            componants[i].outputValues[n][2] = null;
+                            componants[i].outputValues[n][3] = false;
+                        }
+                    }
+                }
+                for (var i = 0; i < componants.length; i++) {
+                    if (componants[i] == null) { continue; }
+
+                    if (componants[i].isSelected) {
+                        componants[i] = null;
+                        emptyIndicies.push(i);
+                    }
+                }
+            }
+
+            if (e.key == "c" && keysDown[keyCodes.control]) {
+                //reset clipboard
+                copiedComponants.length = 0;
+                var componantIndicies = [];
+                var nextStep = [];
+
+                //look through all componants until one that is selected is found
+                for (var i = 0; i < componants.length; i++) {
+                    if (componants[i] == null) { continue; }
+                    //if a selected componant is found, load it into copied componants and expand from there
+                    if (componants[i].isSelected) {
+                        /* 
+                        step0: copy componant by value into the copied componants array.
+                        step1: look at inputs and see if they are connected to anything
+                        step2: if it is connected to somthing, check if that componant is also selected for copying
+                        step3: check and see if that componant has already been copied,
+                               if it has, then continue with the new index if not, add [old index, newIndex, been checked] to componant indicies.
+                        step4: add that componant to an array of future componants to check
+                        step5: change the output node that connects with current componant to the correct copy index
+                        step6: change the input node that connects with the checked componant to the newIndex
+                        step7: do a similar process for each of the output nodes of the checked componant
+                        step8: repeat steps 0-7 for each of the componants to check
+                        */
+
+
+                        var com = new Componant(componants[i].boundingBox.x - (currentPoint[0] - worldOff[0]), (currentPoint[1] - worldOff[1] - componants[i].boundingBox.y),
+                            componants[i].numInputs, componants[i].numOutputs, componants[i].color,
+                            componants[i].name, componants[i].type, componants[i].logicPath);
+
+                        copiedComponants.push(com);
+                        componantIndicies.push([i, 0, false]);
+                        nextStep.push(i);
+
+                        while (nextStep.length > 0) {
+                            var currentNewIndex = null;
+                            for (var n = 0; n < componantIndicies.length; n++) {
+                                if (componantIndicies[n][0] == nextStep[0]) {
+                                    currentNewIndex = componantIndicies[n][1];
+                                    componantIndicies[n][2] = true;
+                                    break;
+                                }
+                            }
+                            /*if(currentNewIndex == null){
+                                var com = new Componant(componants[nextStep[0]].boundingBox.x - (currentPoint[0] - worldOff[0]), (currentPoint[1] - worldOff[1] - componants[nextStep[0]].boundingBox.y),
+                                componants[nextStep[0]].numInputs, componants[nextStep[0]].numOutputs, componants[nextStep[0]].color,
+                                componants[nextStep[0]].name, componants[nextStep[0]].type, componants[nextStep[0]].logicPath);
+                                copiedComponants.push(com);
+                                componantIndicies.push([nextStep[0], copiedComponants.length - 1, false]);
+                                currentNewIndex = copiedComponants.length - 1;
+                            }*/
+
+                            for (var n = 0; n < componants[nextStep[0]].numInputs; n++) {
+                                if (componants[nextStep[0]].inputValues[n][1] != null) {
+                                    if (componants[componants[nextStep[0]].inputValues[n][1]].isSelected) {
+                                        var hasFound = false;
+                                        var newIndex = null;
+                                        var hasBeenChecked = false;
+                                        for (var j = 0; j < componantIndicies.length; j++) {
+                                            if (componants[nextStep[0]].inputValues[n][1] == componantIndicies[j][0]) {
+                                                hasFound = true;
+                                                newIndex = componantIndicies[j][1];
+                                                hasBeenChecked = componantIndicies[j][2];
+                                                break;
+                                            }
+                                        }
+                                        if (!hasFound) {
+                                            copiedComponants.push(new Componant(
+                                                componants[componants[nextStep[0]].inputValues[n][1]].boundingBox.x - (currentPoint[0] - worldOff[0]), (currentPoint[1] - worldOff[1] - componants[componants[nextStep[0]].inputValues[n][1]].boundingBox.y),
+                                                componants[componants[nextStep[0]].inputValues[n][1]].numInputs, componants[componants[nextStep[0]].inputValues[n][1]].numOutputs, componants[componants[nextStep[0]].inputValues[n][1]].color,
+                                                componants[componants[nextStep[0]].inputValues[n][1]].name, componants[componants[nextStep[0]].inputValues[n][1]].type, componants[componants[nextStep[0]].inputValues[n][1]].logicPath
+                                            ));
+                                            componantIndicies.push([componants[nextStep[0]].inputValues[n][1], copiedComponants.length - 1, false]);
+                                            newIndex = copiedComponants.length - 1;
+                                        }
+                                        if (!hasBeenChecked) {
+                                            nextStep.push(componants[nextStep[0]].inputValues[n][1]);
+                                        }
+                                        for (var j = 0; j < componants[componants[nextStep[0]].inputValues[n][1]].numOutputs; j++) {
+                                            if (componants[componants[nextStep[0]].inputValues[n][1]].outputValues[j][1] == nextStep[0]) {
+                                                copiedComponants[newIndex].outputValues[j][1] = currentNewIndex;
+                                                copiedComponants[newIndex].outputValues[j][2] = n;
+
+                                                copiedComponants[currentNewIndex].inputValues[n][1] = newIndex;
+                                                copiedComponants[currentNewIndex].inputValues[n][2] = j;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            for (var n = 0; n < componants[nextStep[0]].numOutputs; n++) {
+                                if (componants[nextStep[0]].outputValues[n][1] != null) {
+                                    if (componants[componants[nextStep[0]].outputValues[n][1]].isSelected) {
+                                        var hasFound = false;
+                                        var newIndex = null;
+                                        var hasBeenChecked = false;
+                                        for (var j = 0; j < componantIndicies.length; j++) {
+                                            if (componants[nextStep[0]].outputValues[n][1] == componantIndicies[j][0]) {
+                                                hasFound = true;
+                                                newIndex = componantIndicies[j][1];
+                                                hasBeenChecked = componantIndicies[j][2];
+                                                break;
+                                            }
+                                        }
+                                        if (!hasFound) {
+                                            copiedComponants.push(new Componant(
+                                                componants[componants[nextStep[0]].outputValues[n][1]].boundingBox.x - (currentPoint[0] - worldOff[0]), (currentPoint[1] - worldOff[1] - componants[componants[nextStep[0]].outputValues[n][1]].boundingBox.y),
+                                                componants[componants[nextStep[0]].outputValues[n][1]].numInputs, componants[componants[nextStep[0]].outputValues[n][1]].numOutputs, componants[componants[nextStep[0]].outputValues[n][1]].color,
+                                                componants[componants[nextStep[0]].outputValues[n][1]].name, componants[componants[nextStep[0]].outputValues[n][1]].type, componants[componants[nextStep[0]].outputValues[n][1]].logicPath
+                                            ));
+                                            componantIndicies.push([componants[nextStep[0]].outputValues[n][1], copiedComponants.length - 1, false]);
+                                            newIndex = copiedComponants.length - 1;
+                                        }
+                                        if (!hasBeenChecked) {
+                                            nextStep.push(componants[nextStep[0]].outputValues[n][1]);
+                                        }
+                                        for (var j = 0; j < componants[componants[nextStep[0]].outputValues[n][1]].numOutputs; j++) {
+                                            if (componants[componants[nextStep[0]].outputValues[n][1]].inputValues[j][1] == nextStep[0]) {
+                                                copiedComponants[newIndex].inputValues[j][1] = currentNewIndex;
+                                                copiedComponants[newIndex].inputValues[j][2] = n;
+
+                                                copiedComponants[currentNewIndex].outputValues[n][1] = newIndex;
+                                                copiedComponants[currentNewIndex].outputValues[n][2] = j;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            nextStep.shift();
+                        }
+
+                        break;
+                    }
+                }
+
+                keysDown[keyCodes.control] = false;
+                canPlace = false;
+            }
+            if (e.key == "v" && keysDown[keyCodes.control]) {
+                var componantLength = componants.length;
+                for (var i = 0; i < copiedComponants.length; i++) {
+                    //necesary because js passes objects by renference not by value, this overcomes that
+                    var com = new Componant(copiedComponants[i].boundingBox.x - (worldOff[0] - currentPoint[0]), (currentPoint[1] - worldOff[1]) - copiedComponants[i].boundingBox.y, copiedComponants[i].numInputs,
+                        copiedComponants[i].numOutputs, copiedComponants[i].color, copiedComponants[i].name,
+                        copiedComponants[i].type, copiedComponants[i].logicPath);
+
+                    com.inputValues = [...copiedComponants[i].inputValues];
+                    for (var n = 0; n < com.numInputs; n++) {
+                        if (com.inputValues[n][1] != null) {
+                            com.inputValues[n][1] += componantLength;
+                            //com.inputValues[n][1] += componantLength;
+                        }
+                    }
+                    com.outputValues = [...copiedComponants[i].outputValues];
+                    for (var n = 0; n < com.numOutputs; n++) {
+                        if (com.outputValues[n][1] != null) {
+                            com.outputValues[n][1] += componantLength;
+                            //com.outputValues[n][1] += componantLength;
+                        }
+                    }
+
+                    componants.push(com);
+                }
+
+                keysDown[keyCodes.control] = false;
+                canPlace = false;
+                copiedComponants.length = 0;
+            }
+        });
+        document.addEventListener("keyup", function (e) {
+            if (e.key == "ArrowUp") {
+                keysDown[keyCodes.up] = false;
+            }
+            if (e.key == "ArrowDown") {
+                keysDown[keyCodes.down] = false;
+            }
+            if (e.key == "ArrowRight") {
+                keysDown[keyCodes.right] = false;
+            }
+            if (e.key == "ArrowLeft") {
+                keysDown[keyCodes.left] = false;
+            }
+            if (e.key == "Control") {
+                keysDown[keyCodes.control] = false;
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Calculator</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body onload="LoadStuff()">
+    <div id="sideNav">
+        <ul>
+            <div class="hamburger"></div>
+            <div class="hamburger"></div>
+            <div class="hamburger"></div>
+        </ul>
+
+        <div>
+            <p>Navigation</p>
+            <ul>
+                <li><a href="#">Standard Calculator</a></li>
+                <li><a href="factoringCalculator.html">Factoring Calculator</a></li>
+                <li><a href="graphingCalculator.html">Graphing Calculator</a></li>
+                <li><a href="mathBitsAndBobs.html">Math Bits and Bobs</a></li>
+            </ul>
+            <p>Useful Stuff</p>
+            <ul id="usefulStuff">
+                <li><button onclick="DisplayScratchPaper()">Open Scratch Paper</button></li>
+                <li><button onclick="CloseScratchPaper()">Close Scratch Paper</button></li>
+                <li><a href="controls.html">Controls</a></li>
+            </ul>
+        </div>
+    </div>
+    <div id="calculator">
+        <div id="insideStuff">
+            <input type="text" id="lookingArea" readonly>
+            <br>
+            <div id="gridContainer">
+                <button onclick="Add(1)">1</button>
+                <button onclick="Add(2)">2</button>
+                <button onclick="Add(3)">3</button>
+                <button onclick="Add(4)">4</button>
+                <button onclick="Add(5)">5</button>
+                <button onclick="Add(6)">6</button>
+                <button onclick="Add(7)">7</button>
+                <button onclick="Add(8)">8</button>
+                <button onclick="Add(9)">9</button>
+                <div></div>
+                <button onclick="Add(0)">0</button>
+                <div></div>
+
+            </div>
+            <div id="operations">
+                <button onclick="operation = 'add'; Operations('+')">+</button>
+                <button onclick="operation = 'subtract'; Operations('-')">-</button>
+                <button onclick="operation = 'multiply'; Operations('*')">*</button>
+                <button onclick="operation = 'divide'; Operations('/')">/</button>
+                <button onclick="Add('.')"> . </button>
+                <button onclick="Add('-')">(-)</button>
+
+            </div>
+            <div id="other">
+                <button onclick="Clear()">Clear</button>
+                <button onclick="Calculate()">Enter</button>
+            </div>
+        </div>
+
+        <br><br>
+        <div id="scratchArea">
+            <textarea name="" id="scatchPaper" cols="50" rows="10"
+                placeholder="This is scratch paper. Use the bottom-left hand corner to re-size me."
+                onmouseover="ScratchIsUsed()" onmouseout="ScratchIsNot()"></textarea>
+        </div>
+    </div>
+
+    <script src="index.js"></script>
+</body>
+
+</html>

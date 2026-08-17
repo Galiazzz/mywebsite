@@ -1,0 +1,37 @@
+body{
+    background-image: linear-gradient(to bottom left, black, rgb(50,50,50));
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    color: rgb(148, 205, 255);
+}
+td{
+    padding: 20px;
+    margin: 20px;
+    background: white;
+}
+/*
+#r1 td{
+    background: mediumblue;
+}
+#r2 td{
+    background: blue;
+}
+#r3 td{
+    background: aqua;
+}
+#r4 td{
+    background: green;
+}
+#r5 td{
+    background: yellowgreen;
+}
+#r6 td{
+    background: yellow;
+}
+#r7 td{
+    background: orangered;
+}
+#r8 td{
+    background: red;
+}
+*/

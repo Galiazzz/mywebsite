@@ -1,0 +1,27 @@
+* {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+#score {
+    position: absolute;
+    z-index: 100;
+    top: 0;
+    left: 0;
+}
+
+#level {
+    position: absolute;
+    z-index: 100;
+    top: 0;
+    left: 150px;
+}
+
+#lives{
+    position: absolute;
+    z-index: 100;
+    top: 0;
+    left: 300px;
+}

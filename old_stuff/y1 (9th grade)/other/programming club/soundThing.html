@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Music Thing</title>
+    <style>
+        #frequencySlide{
+            width: 900px;
+        }
+    </style>
+</head>
+
+<body onload="frequencyDebug()" onload="legnthDebug()">
+    <button onclick="example3('sine')">sine sound</button>
+    <button onclick="example3('square')">square sound</button>
+    <button onclick="example3('triangle')">triangle sound</button>
+    <button onclick="example3('sawtooth')">sawtooth sound</button>
+    <br>
+    <input type="range" id="frequencySlide" oninput="frequencyDebug()" min="20" max="1000">
+    <p>your frequency</p>
+    <br>
+    <input type="range" id="legnthSlide" oninput="legnthDebug()" min="0" max="20" step=".1" value="1.5">
+    <p>your note legnth</p>
+    <input type="text" id="frequencyDebugText">
+    <input type="text" id="legnthDebugText">
+    <script>
+        var context=new AudioContext();
+        var x = 1.5;
+        function example3(type) {
+            o = context.createOscillator();
+            g = context.createGain();
+            o.connect(g);
+            o.type = type;
+            o.frequency.value = document.getElementById("frequencySlide").value;
+            
+            g.connect(context.destination);
+            o.start(0);
+            g.gain.exponentialRampToValueAtTime(0.00001, context.currentTime + x);
+        }
+        function frequencyDebug(){
+            document.getElementById("frequencyDebugText").value = document.getElementById("frequencySlide").value
+        }
+        function legnthDebug(){
+            //x = document.getElementById("legnthSlide").value
+            document.getElementById("legnthDebugText").value = document.getElementById("legnthSlide").value
+        }
+    </script>
+</body>
+
+</html>

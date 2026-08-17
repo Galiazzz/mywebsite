@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Enemy rain</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="shortcut icon" href="favicon.png" type="image/x-icon">
+</head>
+
+<body>
+    <div id="Pictures" style="display: none;">
+        <img src="bullet.png" alt="bullet" id="bullet">
+        <img src="Enemy.png" alt="Enemy" id="enemy">
+        <img src="Player.png" alt="Player" id="player">
+    </div>
+    <div id="home">
+        <h1 class="homeStuff">Space Defenders</h1>
+        <button id="start" onclick="if(!hasStarted){LoadStuff();}">Click to start</button>
+    </div>
+
+    <h1 id="score">Score: 0</h1>
+    <h1 id="level">Level: 1</h1>
+    <h1 id="lives">Lives: 1</h1>
+    <h1 id="shots">Shots Left: 15</h1>
+
+    <canvas id="canvas"></canvas>
+    <button id="deadButton" onclick="SetUpShop()">Go to upgrades</button>
+    <div id="upgrades">
+        <h1 id="money">Money: </h1>
+        <h1 id="maxLives">Max Lives: </h1>
+        <h1 id="maxShots">Max Shots: </h1>
+        <button id="continue" onclick="if(isInShop){PlayAgain();}">Continue</button>
+        <button id="lifeUpgrade" onclick="if(isInShop){if(money >= lifeCost){money -= lifeCost; maxLives++; lifeCost += 10; PlaySound('sawtooth', 2, 600, .8); SetUpShop();}}">Upgrade Max Lives <br> Cost: </button>
+        <button id="shotUpgrade" onclick="if(isInShop){if(money >= shotCost){money -= shotCost; maxShots += 2; shotCost++; PlaySound('sawtooth', 2, 400, .8); SetUpShop();}}">Upgrade Max Shots <br> Cost: </button>
+    </div>
+    <script src="index.js"></script>
+</body>
+
+</html>

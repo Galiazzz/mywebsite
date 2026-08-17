@@ -1,0 +1,33 @@
+*{
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+p{
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 100;
+    font-size: 3em;
+}
+
+canvas{
+    z-index: 1;
+}
+
+#redo{
+    position: absolute;
+    top: 0;
+    right: 0px;
+    display: none;
+    background: green;
+    height: 100px;
+    width: 250px;
+    z-index: 100;
+    color: red;
+    font-size: 2.5em;
+    font-weight: bolder;
+    border: 5px black solid;
+}

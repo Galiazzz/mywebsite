@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Shape Your World 2!</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body onload="LoadStuff()">
+    <div id="imageBank">
+        <img src="images/dirt.png" id="dirt">
+        <img src="images/grass.png" id="grass">
+        <img src="images/stone.png" id="stone">
+        <img src="images/strange ore.png" id="strangeOre">
+    </div>
+    <div id="loadingScreen">
+        <h1 id="stage">Stage</h1>
+        <h2 id="subStage">Sub stage</h2>
+    </div>
+    <canvas id="canvas"></canvas>
+    <canvas id="lookingCanvas"></canvas>
+    <canvas id="UI"></canvas>
+
+    <script src="../../Libraries/Other.js"></script>
+    <script src="../../Libraries/Debug.js"></script>
+
+    <script src="UI.js"></script>
+    <script src="ID.js"></script>
+    <script src="index.js"></script>
+</body>
+</html>

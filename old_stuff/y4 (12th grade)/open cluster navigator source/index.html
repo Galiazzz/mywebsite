@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<!-- Note: I will have to create a new version field stars.csv, as it is larger than 100 MB. Just storing the raw floating point numbers and unpacking them is probably the move, but will take work -->
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Open Cluster Navigator V. 1.1.1</title>
+	<link rel="stylesheet" href="index.css">
+</head>
+
+<body onload="LoadStuff()">
+	<div id="loadingScreen">Loading...</div>
+	<div class="infoBar">
+		Info: <div id="info"></div>
+		Console log: <div id="console"></div>
+		Errors: <div id="errors"></div>
+	</div>
+	<canvas id="canvas" onclick="CanvasClick()" ondblclick="CanvasDoubleClick();" tabindex="0"></canvas>
+	<iframe src="AladinLite/viewer.html" id="aladinFrame" frameborder="0" height="450" width="450"
+		style="overflow: none;"></iframe>
+	<h3>Information:</h3>
+	<ul>
+		<li id="distance"></li>
+		<li id="starPosition"></li>
+	</ul>
+	<h3>Graphics Settings</h3>
+	<ul>
+		<li><button
+				onclick="drawReferenceSpheres = !drawReferenceSpheres; document.getElementById('sphereLines').innerText = (drawReferenceSpheres ? 'on' : 'off')">Toggle
+				reference sphere rendering</button> Current Value: <span id="sphereLines">on</span></li>
+		<li><button
+				onclick="drawOctreeNodeBoundaries = !drawOctreeNodeBoundaries; document.getElementById('nodeLines').innerText = (drawOctreeNodeBoundaries ? 'on' : 'off')">Toggle
+				octree node boundary rendering</button> CurrentValue: <span id="nodeLines">off</span></li>
+		<li><button
+				onclick="drawHome = !drawHome; document.getElementById('homeDrawn').innerText = (drawHome ? 'on' : 'off')">Toggle
+				Earth texture rendering</button> CurrentValue: <span id="homeDrawn">off</span></li>
+		<li>Chunk rendering distance: <input type="range" value="25" min="-1" max="100"
+				oninput="chunkRenderDistance = this.value; document.getElementById('renderingDistance').innerText = chunkRenderDistance;">
+			Current Value: <span id="renderingDistance">25</span></li>
+		<li>Zoom: <input type="range" value="1" min="0.2" max="5" step="0.1"
+				oninput="zoom = this.value; document.getElementById('zoomLevel').innerText = zoom;"> Current Value: <span
+				id="zoomLevel">1</span></li>
+	</ul>
+	<h3>Legend:</h3>
+	<ul>
+		<li style="color:rgb(255, 128, 0);">Hyades</li>
+		<li style="color: rgb(0, 128, 255);">Pleiades</li>
+		<li style="color:rgb(255, 0, 0);">Trapezium</li>
+		<li style="color:rgb(255, 255, 0);">Beehive cluster</li>
+		<li style="color:rgb(255, 0, 255);">Double cluster</li>
+		<li style="color:rgb(255, 128, 128);">Cluster in the Rosette nebula</li>
+		<li style="color:rgb(0, 0, 255);">Coma star cluster</li>
+		<li style="color:rgb(128, 77, 0);">Messier 7</li>
+		<li style="color:rgb(0, 64, 128);">Southern Pleiades (IC 2602)</li>
+		<li style="color:rgb(64, 128, 64);">IC 2391</li>
+		<li style="color:rgb(128, 25, 128);">Messier 39</li>
+		<li class="blackBorder">Field Stars</li>
+	</ul>
+	<h4 style="color: rgb(0, 255, 0);">Wireframe spheres (spheres made out of lines) show all the points that have a
+		distance of a multiple of 50 parsecs away from the Sun.</h4>
+	<h4 class="blackBorder">Field stars from the Gaia database are only included out to 250 parsecs which is why there
+		appears to be a sudden dropoff in the density of stars at that distance.</h4>
+	<h3>Controls:</h3>
+	<ul>
+		<li>
+			<strong>Keyboard</strong>
+			<ul>
+				<li>To move forward, press the "W" key <span class="focusAlert">*focus dependent*</span></li>
+				<li>To move backward, press the "S" key <span class="focusAlert">*focus dependent*</span></li>
+				<li>To move left, press the "A" key <span class="focusAlert">*focus dependent*</span></li>
+				<li>To move right, press the "D" key <span class="focusAlert">*focus dependent*</span></li>
+				<li>To move down, press the "SHIFT" key <span class="focusAlert">*focus dependent*</span></li>
+				<li>To move up, press the "SPACE" key <span class="focusAlert">*focus dependent*</span></li>
+			</ul>
+			<br>
+			<ul>
+				<li>To look up, press the "ArrowUp" key. <span class="focusAlert">*focus dependent*</span></li>
+				<li>To look down, press the "ArrowDown" key. <span class="focusAlert">*focus dependent*</span></li>
+				<li>To look right, press the "ArrowRight" key. <span class="focusAlert">*focus dependent*</span></li>
+				<li>To look left, press the "ArrowLeft" key. <span class="focusAlert">*focus dependent*</span></li>
+			</ul>
+			<br>
+			<ul>
+				<li>To move faster, press the "C" key</li>
+				<li>To move slower, press the "X" key</li>
+				<li>To toggle if the canvas (the space where the visualizer is rendered) has focus, press the "Enter" key</li>
+				<li>To toggle if the hidden information display overlay is visble, press the "P" button. <span
+						class="focusAlert">The information overlay is only avaiable if you have access to a keyboard, but some of
+						the information is visible just below the visualizer canvas. The information window will also not disappear
+						if the visualizer canvas is the only thing on the screen. Scrolling down or moving your cursor onto the
+						browser bar will trigger a page redraw and fix this.</span></li>
+			</ul>
+			<p>To navigate the rest of the page, use the tab select feature (tab to select the next item, shift+tab to select
+				the previous) in addition to the up/down arrow keys. The canvas is tabindex = 0, and pressing tab moves you
+				further down the page.</p>
+		</li>
+		<li>
+			<strong>Touchscreen</strong>
+			<ul>
+				<li>To focus the visualizer canvas, tap the visualizer window.</li>
+				<li>To defocus the visualizer canvas (so you can scroll around the page normally), double-tap the visualizer
+					window.</li>
+				<li>To look around, move a single touchpoint around the screen while the canvas is focused. <span
+						class="focusAlert">*focus dependent*</span></li>
+				<li>To move forward, move two touchpoints away from each other (similar to the zoom in motion). <span
+						class="focusAlert">*focus dependent*</span></li>
+				<li>To move backward, move two touchpoints toward each other (similar to the zoom out motion). <span
+						class="focusAlert">*focus dependent*</span></li>
+				<li>If you are on a device that has a keyboard, the speed modifier keys (x and c) still work if you want finer
+					control over your position.</li>
+			</ul>
+		</li>
+		<li>
+			<strong>Mouse</strong>
+			<ul>
+				<li>To focus the visualizer canvas, click the visualizer window.</li>
+				<li>To defocus the visualizer canvas (so you can scroll around the page normally), double-click the visualizer
+					window.</li>
+				<li>To look around, move your mouse. <span class="focusAlert">*focus dependent*</span></li>
+				<li>To move forward, scroll up using the mouse wheel. <span class="focusAlert">*focus dependent*</span></li>
+				<li>To move backward, scroll down using the mouse wheel. <span class="focusAlert">*focus dependent*</span></li>
+				<li>If you are on a device that has a keyboard, the speed modifier keys (x and c) still work if you want finer
+					control over your position.</li>
+			</ul>
+		</li>
+		<p class="focusAlert">
+			In order to make the full webpage usable with only a singe interface, the concept of focus has been introduced. If
+			the canvas is focused, pressing the arrow up or down keys will change the view direction, while pressing the same
+			keys if the canvas is not focused will scroll the page up and down. To learn how to change if the canvas is
+			focused, look the controls for the different interaction methods.
+		</p>
+	</ul>
+
+	<h4>Other interaction:</h4>
+	<ul>
+		<li>Text that has a <span id="shadowExample">blue shadow</span> around it that then changes to a <span
+				id="shadowExample2">fuchsia shadow</span> when you hover over it can be clicked on to reveal other text such as
+			an in-depth explanation or the changelog.</li>
+		<li>
+				A graphics settings section has been added to allow for the customization of what is drawn to the screen. If
+				frame rate is low enough that it is uncomfortable, overlays can be turned off to improve it. To improve the
+				frame rate, turn off reference sphere rendering, turn off octree node boundary rendering, reduce the chunk
+				rendering distance, and increase the zoom.
+			<br>
+			<button class="toggler">Click me for more information about graphics settings</button>
+			<div class="inDepth">
+				<p>
+					If you are able to access the informaion overlay (press the "P" key), keeping average and min FPS close to 60,
+					and frame time close to 16.67ms should make any stuttering nearly unnoticable. The exact amount that you find
+					acceptable differs depending on your preferences, and what interaction technique you are using. In my
+					experience, I have found that low frame rates are more annoying when using keyboard controls then they are
+					when
+					using touch screen or mouse countrols.
+				</p>
+				<p>
+					While the reason that increasing zoom speeds up rendering might not immediately be apparent, it starts to make
+					sense if you think about what the GPU is actually doing. Once the vertex shader is finished finding the
+					transformed positions of the stars, any star that is entirely outside the screen can be discareded so that the
+					fragment shader doesn't have to waste time running the fragment shader for, or more importantly, filling in
+					the pixels, since this
+					visualizer will be fill rate limited on many mobile GPUs. Increasing the zoom means that more stars lie
+					outside
+					the screen and can be ignored.
+				</p>
+				<p>
+					While there likely won't be any reason to want to render the outlines of the octree nodes, you might find it
+					interesting to see how the stars are structured in computer memory. The colors of the nodes corresponds to
+					their
+					distance from the root node. From the root node the coloring is: blue, green, cyan, red, magenta, yellow,
+					white.
+				</p>
+				<p>
+					Decreasing the chunk rendering distance is the most likely modification to significantly improve the frame
+					rate.
+					The slider controls the maximum distance from the chunk (in decaparsecs) where the chunk is still rendered.
+				</p>
+			</div>
+		</li>
+		<li>
+			The Aladin viewer is the small window visible directly below the main canvas rendering area and above the information section that displays sky survery images. The position of the camera as viewed from Earth is always the center of the image, so it is very useful for seeing what the cluster you are currently exploring looks like from Earth. To change the magnification of the Aladin viewer, either use the scroll wheel on a mouse or the two-fingered zoom in/out motion on a touchscreen.
+			<br>
+			<button class="toggler">Click me for more information about the Aladin viewer</button>
+			<div class="inDepth">
+				<p>
+					The Aladin sky atlas is an amazing tool developed at CDS, Strasbourg Observatory, France, and is really easy to incorperate into other web projects, like this one. I highly recommend checking out their website which is linked in the acknowledgements.
+				</p>
+				<p>
+					As you might know, it is impossible to project the surface of a sphere onto a plane without introducing some kind of distortions. Since projecting the sky onto a computer screen is subject to this limitation, there have been multiple different methods created to solve this solution in different ways. Many of the most common ones can be switched between by using the drop-down menu in the upper right of the viewer. The effect of different projections is quite obvious with a wide field of view and can be fun to compare.
+				</p>
+				<p>
+					Another important thing you can change with the viewer is change which sky survery is being displayed. This is done by clicking the icon in the upper right of the viewer that looks like several pieces of paper stacked on top of each other and changing the base layer dropdown to something other than the current survey. This can be very useful since different objects emit and absorb at different wavelengths. For example, interstellar dust is very good at blocking visible light, but infrared light can pass through it with very little difficulty and allow you to see things that would otherwise be obscured, such as currently forming star clusters.
+				</p>
+				<p>
+					Potentially the most powerful tool in the Aladin viewer is the ability to easily query the object you are looking at. This can be particually useful if you are interested in the data for a specific star (including what groups it belongs to), or if you want to know what the name of an unlabled star cluster is. To find this information, click the crosshairs icon located below the layers icon and then click the object you want identified. To access the information, you will have to click on the blue text which will take you to the SIMBAD database entry for that object.
+				</p>
+			</div>
+		</li>
+	</ul>
+	<h3>What is it showing?</h3>
+	<p>
+		&emsp;While stars may seem evenly distributed throughout the sky, this is not a fully accurate
+		representation of reality where a not insignificant number of stars group together in clusters. One of the reasons
+		that this happens is because stars rarely form alone, the clouds of dust and gas that form them often create
+		hundreds to thousands of stars all in a relatively small amount of space. (You can see this actively happening in
+		nebulae such as <a href="https://md.spacegrant.org/observatory-images/#:~:text=Tuesday%2C%20November%2022"
+			target="_blank">M42</a>.) The resulting structures are known as open star clusters. This visualizer takes
+		information from several well-known open clusters and plots their constituent stars in 3D-space and allows you to
+		fly around them in an attempt to make space seem less flat.
+	</p>
+	<p>
+		&emsp;If you are still interested and want more information on what is being displayed, click the button below to
+		expand a more detailed explanation.
+	</p>
+	<button class="toggler">Toggle view of in-depth explanation</button>
+	<div class="inDepth">
+		<p>
+			&emsp;If you have ever looked up on a clear night, you have almost certainly seen stars filling the sky. To our
+			eyes and even to the more sensitive camera sensors, these bright points of light seem to simply be points existing
+			on a flat two dimensional surface of the sky. In reality however, stars fill a three dimensional space and it is
+			only our nearly fixed perspective from the Earth that makes them appear two dimensional. This visualizer uses data
+			from the SIMBAD and Gaia databases to plot the positions of 2,570,322 stars in three dimensional space and then
+			lets you fly around and explore them.
+		</p>
+		<p>
+			&emsp;You may have noticed that some of the visible stars have colored tints to them. This is because these stars
+			are likely part of nearby <strong>open star clusters</strong>. When stars are formed, they generally don’t form in
+			isolation, instead they often form in tight-knit groups known as open clusters. There are many different open
+			clusters that are visible to the naked eye, with the Pleiades, Hyades, Beehive cluster (Praesepe), and Coma star
+			cluster being among the most well known. The vibrant colors that you noticed earlier are there purely to help
+			distinguish which clusters are which and don't reflect the actual colors of the stars. Currently, the visualizer
+			only plots a few of these open clusters, but that number will likely increase in the future. There are also
+			several uncolored open clusters visible in the Gaia data. It can be a fun exercise to try and find/identify them
+			based on their density compared to the nearby field stars and their coordinates.
+		</p>
+		<p>
+			&emsp;While exploring some of the more distant star clusters (such as the double cluster or the cluster in the
+			rosette nebula), you may have noticed that they appear to be stretched out like spaghetti. This is not due to a
+			black hole hiding on the side of the cluster opposite from Earth, but rather an issue with data collection. All
+			measurements have some error, and even the very precise <strong>parallax</strong> measurements used to derive
+			distance which were taken by dedicated satellites (either ESA’s Hipparchus or GAIA missions) can have significant
+			error relative to parallax when distances to the star get very large. Since distance to an object can be found by
+			inverting the parallax (1/parallax), if parallax is very small (distance is very large), any small difference in
+			parallax due to error can have very large effects in the calculated distance to the object. This behavior is less
+			likely to be seen in the <strong>field stars</strong> (stars that are not part of a cluster), since they are both
+			closer to Earth, and have fairly high quality measurements (parallax_over_error >= 40).
+		</p>
+		<p>&emsp;In the last paragraph, I mentioned that parallax was used to calculate distance to an object. If you have
+			never done any work with astronomy, you probably don’t know what the definition of parallax is, even though you
+			almost certainly have an intuitive understanding of parallax. Put simply, parallax is the effect where objects
+			that are further away from you appear to move less in your field of view than objects that are closer to you if
+			they both move the same absolute distance. The classic example of this is when you are on a road trip and looking
+			out your window (hopefully you're not the driver). While the trees, road, and grass appear to whiz by you at an
+			incredible speed, the hills further away seem to be moving at a leisurely pace, while any mountains that are
+			visible appear to crawl along with almost no speed. If you know the absolute distance the observer moved (the
+			diameter of Earth’s orbit), and how much the star appeared to move to the observer, distance to the star can be
+			found mathematically. One of the preferred units of distance in astronomy, and the unit that this visualizer uses
+			is known as the <strong>Parsec</strong> which is defined as the distance to a point that has a parallax of 1
+			arcsecond as the Earth goes around the sun.
+		</p>
+		<p>
+			&emsp;One more note on the astronomy of the visualizer, since there is no intrinsic “up” or “forwards” in space,
+			we get to define the coordinate system that we use. The most commonly used coordinate system in astronomy is the
+			<strong>Equatorial Coordinate System</strong> where a point on an imaginary celestial sphere. One of the angles,
+			known as <strong>Declination (DEC)</strong> is fairly easy to conceptualize; if you were to extend the latitude
+			lines of Earth into space, that is what declination would be. A star at 0 degrees declination would be directly
+			above you at some time of the day if you were at the equator, while a star with 90 degrees declination would be
+			directly above you if you were at the north pole. The other coordinate, known as <strong>Right Ascension
+				(RA)</strong>, is a little trickier to visualize and define since its baseline is much more arbitrary. The way
+			that RA 0 is defined is the direction from the center of the Earth to the Vernal Equinox. Since that probably
+			won’t make sense unless you already know what it means, let’s back up. The Earth has an axis of rotation which is
+			a line which essentially remains in the same direction (towards DEC 90, since it makes sense to define things with
+			respect to the northern hemisphere where most of the human population lives), while the Earth rotates in
+			essentially a circle around the sun. Since the Earth’s axis of rotation is tilted with respect to Earth's orbital
+			plane, there are times of the year where Earth’s axis is pointing either towards or away from the Sun. When the
+			Earth’s axis is tilted towards the sun, it is the summer solstice while it is the winter solstice when the Earth’s
+			axis is tilted away from the sun. There are also two times of the year when the Earth’s axis is neither pointed
+			towards or away from the sun, but rather perpendicular to the direction to the sun. These times are known as the
+			equinoxes where the vernal equinox occurs in the Spring (going from the winter solstice to the summer solstice)
+			and the autumnal equinox occurs in the autumn (going from the summer solstice to the winter solstice). Thinking in
+			these terms, Right Ascension 0 can be defined as the direction towards the sun during the Vernal equinox. If you
+			have access to a virtual planetarium such as <a href="https://stellarium-web.org"
+				target=”_blank”>stellarium-web.org</a>, this point can be seen by finding the intersection between the celestial
+			equator (DEC 0 in the equatorial coordinate system) and the ecliptic (the path of the sun and solar system in the
+			sky) and is somewhere in the constellation Pisces (even though the vernal equinox is sometimes called the point of
+			Aries). In the visualizer, this coordinate system is shown by the wireframe reference spheres where the green
+			rings are spaced every 10 degrees of Declination while the red rings are spaced every 10 degrees of Right
+			Ascension. RA 0 is marked by a green (rather than a red) line.
+		</p>
+		<button class="h3Button toggler">1.1.0 update addendum</button>
+		<div class="inDepth">
+			&emsp;While the coordinate system described in the previous paragraph does correctly describe the idea behind the
+			equatorial coordinate system, which is very close to the coordinate system that the visualizer uses, there are
+			some subtle differences. The issue with the equatorial coordinate system is that it is based off of Earth’s axis
+			of rotation which gradually changes over time. If you look at a good planetarium program such as stellarium, turn
+			on the equatorial coordinate grid, zoom into the north celestial pole, and start changing what year it is, you
+			will see that grid will start to move with respect to the stars. You can see the ultimate effect of this in the
+			visualizer as an offset white border around cluster stars since the field stars and cluster stars currently have
+			their positions drawn from different databases. The solution to this is instead of defining the coordinate system
+			off of the Earth’s axis of rotation and the direction to the sun at a some point in Earth’s orbit, defining the
+			coordinate system using several fixed points (quasars, which are so far away that they should appear completely
+			stationary given the limited accuracy of the measuring equipment). However, since it is helpful to stick somewhat
+			with convention and have the coordinates in terms of RA and DEC, the data points are transformed so that they
+			appear as they would in an equatorial coordinate grid at a particular time known as the epoch. The star position
+			mismatch mentioned earlier is likely because the Gaia database (white stars) uses the Gaia-CRF3 coordinate system
+			which has an epoch of 2016.0 while the SIMBAD database (colored stars) uses the ICRS coordinate system with an
+			epoch of 2000.0.
+		</div>
+		<button class="h3Button toggler">1.1.1 update addendum</button>
+		<div class="inDepth">
+			<p>
+				&emsp;With this update, the coordinate system mismatch that the 1.1.0 update addendum was about has been mostly
+				solved, with all stars within 250 parsecs of the sun having their data drawn from the Gaia database, while all
+				stars further away than 250 parsecs have their data solely drawn from the SIMBAD database. The reason for the
+				sharp cutoff at 250 parsecs is because that is the current distance limit for field stars. If a star is closer
+				than 250 parsecs, then there will be an entry in the CSV file downloaded from the Gaia archive for it (unless is
+				it of particularly low quality, in which case we would want to discard it anyway), and there shouldn’t be a need
+				to use the SIMBAD database in addition to the Gaia database if we can figure out some way to tell if a star is
+				part of a cluster or not. The first and simplest test we can do is to tell if the star is in the same part of
+				the sky as the cluster and is roughly the same distance as the cluster, but we will need to use more information
+				to fine-tune this approximation. The extra piece of information that is useful here is proper motion, which is
+				how the star appears to move in the sky after coordinate system transformations are accounted for and represents
+				how the star is truly moving through space. Since the stars in an open cluster were born together from the same
+				molecular cloud, they should have nearly the same proper motions, and by seeing which stars have similar proper
+				motions to the accepted value of the whole cluster, we can tell if a star is likely part of that cluster.
+				Thankfully, most of this information is either available in the SIMBAD database for the cluster as a whole, or
+				can be approximated based on the density of stars in the visualizer. As for all the open clusters further away
+				than 250 parsecs, they do not overlap with the field stars currently in the visualizer and utilize potentially
+				lower quality information from the SIMBAD database.
+			</p>
+			<p>
+				&emsp;The outcome of this method is that there are no longer any repeat stars, and since there is only one
+				database for many of the clusters, there is no longer any slight offset between the field star and cluster star
+				versions of the same star. A before and after comparison image can be seen below. Another interesting side
+				effect of this is that the colors of the cluster stars are more vibrant at large distances. This is because the
+				colors were previously getting washed out by alpha blending, since blending the white of a field star diminishes
+				the saturation of any color that was previously there. As with most things, there is at least one slight
+				downside to this change which is that some clusters are harder to see from large distances. While the white
+				field star points washed out the color of cluster stars, it also made cluster stars with poorly chosen colors to
+				be more visible, and the removal of this brightness made clusters such as IC 2602 and IC 2391 harder to locate.
+			</p>
+			<p>
+				&emsp;Another important addition in this update is the embedded Aladin viewer which shows what the sky in the
+				direction of the camera looks like when viewed from Earth. The only time that the viewer does not show the sky
+				in the direction of the camera is when the distance from Earth is 0 (when the page is first loaded), in which
+				case the viewer points to a section of the witch’s broom nebula (C 34). Knowing what the sky towards your
+				current position looks like can be quite useful, since many open clusters have recognizable dust structures or
+				nebulae around them such as the pleiades cluster which has a beautiful blue reflection nebula surrounding it.
+				Some clusters, such as the Rho Ophiuchi cluster, which is clearly visible in Gaia data, but hasn’t yet been
+				given its own color, have so much dust and gas obscuring them that they can hardly be seen in visible
+				wavelengths, with only a handful of stars close enough and bright enough to shine through the dust. Changing the
+				survey view to AllWISE color, which shows light collected in the infrared rather than visible wavelengths, will
+				suddenly reveal all the stars you had previously been missing.
+			</p>
+			<img src="images/before.png" alt="before" title="before"><img src="images/after.png" alt="after" title="after">
+		</div>
+	</div>
+	<h3>How is it able to show this?</h3>
+	<h4>&emsp;The Math involved</h4>
+	<p>
+		&emsp;While knowing what you want to display is all well and good, it doesn’t mean much unless you have some way to
+		get a computer to display what you want it to. The way that this is done is through the language of mathematics to
+		represent various transformations of numbers behind the stars’ information. In short, the mathematics involved has
+		to be able to convert between coordinate systems, allow the user to move around translationally (up, down, left,
+		right, forward, and backward), allow the user to look around with rotations, and transform the 3D coordinates of a
+		star in space to the 2D coordinates of a point on a computer screen.
+	</p>
+	<p>
+		&emsp;Unlike the last section, this section will assume at least some prior knowledge of mathematical notation, but
+		hopefully in a somewhat gentle manner with a few helpful resources included. If you are able to visualize the
+		transformations that the math is doing, then you will be most of the way to understanding it.
+	</p>
+	<p>
+		&emsp;If you are still interested, take a look! <span
+			title="La matematica è l’alfabeto nel quale Dio ha scritto l’universo.&#013;-Galileo Galilei&#013;&#013;English Translation: Mathematics is the language in which God has written the universe.">The
+			language in which the secrets of the Universe are written awaits!</span>
+	</p>
+	<button class="toggler">Toggle view of in-depth explanation</button>
+	<div class="inDepth">
+		<p>
+			&emsp;If you have ever worked with databases of almost any kind, you probably know that the raw data that you are
+			presented with can often be very difficult to decipher, and that it needs some sort of visualization in order to
+			be easily made sense of by the human brain. In between the raw data and the final visualization, there is the
+			computer running a program. This section of explanation is all about calculations that the computer is doing. If
+			you are interested in the implementation details, that will mainly be discussed in the next section, but there
+			will be a few tidbits here and there. Unfortunately, technical details are unavoidable and the field of computer
+			graphics is almost inseparably intertwined with linear algebra, but I will try to keep things at least somewhat
+			easy to understand.
+		</p>
+		<p>
+			&emsp;The inputs that the program receives are very long lists of numbers (millions of entries long in some
+			cases) that correspond to each star’s Right Ascension, Declination, and parallax, and it is the first job of the
+			program to turn these <strong>spherical coordinates</strong> (since they designate a point as being rotations of a
+			point on a sphere of a certain radius determined by parallax) into <strong>Cartesian coordinates</strong> (the x,
+			y, z coordinates that we all know and love).This is done by first finding a point with a distance of one unit from
+			the origin in the direction of the star and then scaling that point by the distance to the star. While the
+			rotation matrices that find the point in the direction of the star may look scary, all they amount to is rotating
+			a point located directly in
+			front of the viewer (at x=0, y=0, z=1) first around the horizontal x axis by the DEC angle (rotate the point
+			up/down) and then around the vertical y axis by the RA angle (rotate the point left/right). If you are interested,
+			the final position of the star in parsecs (assuming parallax is measured in milliarcseconds) works out to be x =
+			-cos(DEC)*sin(RA)*1000/parallax, y = sin(DEC)*1000/parallax, z = cos(DEC)*cos(RA)*1000/parallax.
+		</p>
+		<p>
+			&emsp;While this is all the math that is needed to set up the positions of the star, we now enter the field of
+			computer graphics in earnest and from here on out, I will refer to what the user sees as the perspective of an
+			imaginary camera which we can control. Since computer graphics is most easily explained in the language of linear
+			algebra, it would also be prudent to define some of those terms. A <strong>vector</strong> in this context is a
+			set of three numbers (x, y, and z) that represent a 3D position or direction in Cartesian Space. A
+			<strong>matrix</strong> in this context is a set of three vectors that define a linear transformation on a vector.
+			One of the easiest ways to think about matrices is by thinking of them as dragging around the basis vectors (the
+			vectors which indicate one unit in or out of a dimension) and when multiplied by a vector, computes where a point
+			that was dragged around with the coordinate system would land in the pre-transformed space. If that doesn’t make
+			sense at first, don’t worry, it helps a lot to watch a few animations on the topic. One video that I think
+			illustrates this idea very well is <a href="https://www.youtube.com/watch?v=kYB8IZa5AuE" target="_blank">this</a>
+			video by the YouTube channel 3Blue1Brown.
+		</p>
+		<p>
+			&emsp;So far, everything that we have talked about only happens once, when the page is loaded. However, in order
+			for something to be interactive, it has to continually update at a rapid pace and the next few paragraphs will all
+			deal with the math that happens each time a new frame is drawn to the screen. The simplest form of interaction
+			that we can implement is <strong>translational motion</strong> which is a fancy way of saying that we can move the
+			camera around up, down, left, right, forward, and backward, but not rotate it. This is very easy to implement
+			in Cartesian coordinates (but very difficult to implement in spherical space); we just subtract the 3D position of
+			the camera from the 3D position of the star. If subtracting one 3D position from another doesn’t make sense, it
+			just means subtracting the components of the two vectors, so (x1, y1, z1) - (x2, y2, z2) = (x1 - x2, y1 - y2, z1 -
+			z2). Rotations are a little trickier in cartesian coordinates (though they are very easy in spherical
+			coordinates), and require either two rotation matrices (one for rotation around the vertical axis and one for
+			rotation around the horizontal axis) to be applied to the translated vector, or the application of one
+			premultiplied rotation matrix. For reasons that will be discussed later, this visualizer uses a premultiplied
+			matrix. Since the order of rotations matters, what we want to do is rotate first around the vertical axis
+			(left-right rotation) and then rotate around the horizontal axis (up-down rotations).
+		</p>
+		<p>
+			&emsp;You may have noticed that so far, everything has been done in three dimensions, while the viewport that is
+			being drawn to (the screen) is in two dimensions. This means that we have to somehow step down one dimension in a
+			process known as projection. There are many different kinds of projections with the two main categories.
+			<strong>Parallel projections</strong> keep lines that are parallel in 3D space, parallel in 2D space, but since
+			this is not what we are used to seeing, they often look quite odd. <strong>Perspective projections</strong> on the
+			other hand make things that are further away from the camera appear smaller, and is what this visualizer uses.
+			While there are many different forms and variations of perspective projection, this visualizer uses the very
+			simple method of dividing the x and y coordinates of the star in 3D space by the z-coordinate to find the
+			projected coordinates. If you want to derive the equations of 3D projection (which can be a fun exercise to do on
+			an otherwise empty day), think about a ray traveling from the origin which passes through a flat projection screen
+			at a constant z-value (the projection distance) on the way to a 3D point. Expressing the path of the ray in terms
+			of a parametric equation can be helpful when solving for the intersection. Changing the rotation or geometry of
+			the projection surface can result in all sorts of interesting effects, and combining different forms of projection
+			between different surfaces and points can allow you to produce an infinite number of different projections, each
+			with their own properties.
+		</p>
+		<p>
+			&emsp;In one of the previous paragraphs, I mentioned that instead of multiplying a vector by a series of matrices,
+			this visualizer applies the transformation by multiplying the vector by a single matrix. The reason for this has
+			to do with the computer science part of the visualizer, but the math that allows it to work is also quite
+			interesting, so I will include it here. Put simply, a premultiplied matrix can be calculated once at the beginning
+			of the frame, stored, and used later so that when all the points are transformed, only one matrix-vector
+			multiplication has to be done per point rather than two and some other operations. If you remember back to when I
+			mentioned that translation can be implemented as a vector subtraction and projection can be implemented by
+			dividing by the z coordinate, you may wonder how that can be combined in a single matrix, after all, a matrix
+			represents a linear transformation which means that the origin must stay fixed which translations would violate.
+			The trick that is used is rather than have the 3D point expressed as a 3-dimensional vector and the matrices be
+			expressed as a 3x3 matrix, to express the point as a 4-dimensional vector in a homogeneous coordinate system and
+			the extra dimension in the matrices can be used to implement 3D translation and projection. Since the 3D
+			coordinate of a 4D homogeneous vector (x, y, z, w), is (x/w, y/w, z/w), what the projection matrix does is assign
+			the w component to the z component so that when the graphics API or hardware does the conversion, the projection
+			to 2D space is done for us.
+		</p>
+		<img src="images/transformation train.png">
+		<p>*Advanced Note*</p>
+		<p>&emsp;If you are wanting to use this method in your own projects, you should note that this simple projection
+			matrix destroys the depth information of the point during projection (since z also gets divided by z). If you want
+			that information, you have two options that trade off either realism for computational efficiency or computational
+			efficiency for realism. The first technique is to give up the linearity of the depth buffer (but preserve the
+			ordering) by setting row 3, column 4 of the projection matrix to a negative number. If you take this approach, you
+			will have to live with the z-fighting artifacts that may occur at large distances due to a lack of precision and
+			clipping at both near and far distances (there is a trade-off between these two issues). The other technique is to
+			manually divide x and y by z and leave w at 1 which works very well and looks a little more realistic (after all,
+			we don’t typically see near or far objects clipped out of existence or see further objects in front of closer
+			ones), but it doesn’t make the maximum use of the hardware’s capabilities. Currently, this visualizer doesn't do
+			any sort of depth testing, so it is free to use the simple projection matrix. If I did need a depth buffer, I
+			would square the z-term so that there the original z-value is left over after the perspective divide. However,
+			since alpha blending is enabled, and depth testing didn't seem to provide enough of a speed increase to justify
+			the reduced quality, there will likely not be a need to use a projection matrix that maintains depth ordering.</p>
+		<p>*End of Advanced Note*</p>
+		<p>
+			&emsp;One final note on coordinate systems: the direction that we decide is positive for each axis is somewhat
+			arbitrary. This visualizer uses positive z as pointing out from the camera (into the screen), positive y as being
+			up or to the top of the screen, and positive x pointing to the right of the screen, but other combinations can
+			work just as well as long as everything is consistent. In fact, I have heard of people writing rendering systems
+			with positive z being the direction behind the camera rather than being the same direction the camera is pointing,
+			or even being vertical, so feel free to use a different system than I used (but you will have to rewrite the
+			matrices).
+		</p>
+		<button class="h3Button toggler">1.1.0 update addendum</button>
+		<div class="inDepth">
+			<img src="images/zoom.svg" alt="zoom.svg">
+			<img src="images/screen stretch.svg" alt="screen stretch.svg">
+			<img src="images/projection.svg" alt="projection.svg">
+			<img src="images/xRot.svg" alt="xRot.svg">
+			<img src="images/yRot.svg" alt="yRot.svg">
+			<img src="images/translation.svg" alt="translation.svg">
+			<img src="images/vec.svg" alt="vec.svg">
+			<p>
+				&emsp;In this update, the matrix multiplications that are performed were slightly modified to combine various
+				“screen stretches” into the premultiplied matrix that is sent to the GPU. By “screen stretches”, I mean
+				multiplying the x and y coordinates of the transformed points by certain values which gives the effect of
+				stretching out the display in those directions. The reason that a screen stretch is performed is to correct for
+				non square aspect ratios of the viewing devices. For example, most computer monitors are rectangular with their
+				horizontal width being greater than their vertical height. If some sort of stretch is’t done, an open cluster
+				which should appear spherical (or circular on a 2D screen) will instead appear as an ellipse due to the use of
+				normalized device coordinates. The same problem would occur on a phone screen where the display is longer
+				vertically than horizontally. The solution to this is to multiply the longer dimension by the length of the
+				shorter axis divided by the length of the longer axis. This has the effect of squishing the longer dimension
+				which gives the viewer a larger field of view.
+			</p>
+			<p>
+				&emsp;The zoom matrix is very similar to the screen stretch matrix, but instead of stretching the dimensions
+				unevenly like the screen stretch would, it evenly multiplies the x and y coordinates so that the only visible
+				effect is an increase or decrease in magnification. Note that the type of distortion zooming in produces is
+				different then the type of distortion moving forwards produces. This difference is the reason the dolly zoom
+				effect works. An interesting effect of this is that perspective can become weaker or stronger depending on the
+				combination of distance and zoom which would be similar to changing row 4, column 3 of the projection matrix to
+				a number other than 1 and simultaneously changing row 4, column 4 to a number other than 0.
+			</p>
+		</div>
+	</div>
+	<h4>&emsp;The Computer Science involved</h4>
+	<p>
+		&emsp;Now that we know what we want to implement and what calculations need to be done in order to implement it, it
+		is time to actually implement the visualizer. Due to the large number of computations that need to be done for each
+		frame that is drawn, special code has to be written to take advantage of specialized hardware that the computer has.
+		This opens the door to a whole new world of problems, solutions, and strange behavior. Due to the technical nature
+		of this topic, this is the longest, and possibly most confusing section of the description, but I hope that that
+		will not prevent you from reading on about things from vicious vertices to pleasing parallelism.
+	</p>
+	<button class="toggler">Toggle view of in-depth explanation</button>
+	<div class="inDepth">
+		<p>
+			&emsp;Once you know exactly what you want to implement, and the basic idea of how to implement it, you are most of
+			the way to having it completed. However, the step of actually implementing it is a formidable challenge in its own
+			right and requires a knowledge of what the computer is doing and ways to make it execute its program very quickly.
+			To give an example of how much computing power is needed, if we assume that the program needs to calculate the
+			projected coordinates of 2,607,507 3D points (2,570,322 points for the field stars, 13,191 points for the cluster
+			stars, and 23,994 points for the reference spheres) using the method described in the previous section (38
+			operations for the matrix-vector multiplication and 4 for the projection of the homogenous coordinates) and the
+			visualizer runs at 60 frames per second, the computer would have to do 6,570,917,640 floating point operations per
+			second (<strong>FLOPS</strong>). While this is well within the theoretical limits of many computers, several other
+			effects conspire to reduce the actual performance. To counteract this, we have to use the computer to its full
+			potential in case the machine that it is being run on is slower than normal, to make the program more scalable,
+			and to allow for the creation of new features down the line.
+		</p>
+		<p>
+			&emsp;The first overall technique that is used is to have the program execute as close to the physical hardware as
+			possible. You might ask: “Doesn’t the program always get executed on the hardware, since the purpose of writing a
+			program is to get a computer to run it? If so, how could you possibly get closer than that?” While it is certainly
+			true that at some level the hardware of the computer will always be what the program is running on, many languages
+			(such as Python or JavaScript) are what is known as <strong>interpreted</strong> and when they run, they don’t
+			actually get run directly by the computer. Rather, the computer runs a program which runs the code that you write.
+			This has the benefit of keeping source code file sizes small (such as JavaScript where the source code is only a
+			text file), allowing easy portability of code (such as the Java Virtual Machine or JVM), and preventing certain
+			exploits or interference between programs (sandboxing). However, this often comes with a substantial penalty in
+			terms of the execution speed of the program. The alternative method is known as <strong>compilation</strong> where
+			a program known as the compiler looks at the source code you wrote and generates a file that can be directly
+			executed by the hardware. This process also allows for various low-level optimizations to be done by the compiler
+			which can speed up the execution of the program by a very significant amount. Many common modern languages blur
+			the line between the two approaches (try searching “calling C functions from Python” or “JavaScript JIT
+			compilation” if you like going down internet rabbit holes), but both the languages that this visualizer uses are
+			compiled in some sense to try to take advantage of this.
+		</p>
+		<p>
+			&emsp;The other broad technique that this visualizer employs is to take advantage of hardware that is dedicated to
+			performing certain tasks. For example, if we were to implement the visualizer on a computer that only has an old
+			<strong>CPU (Central Processing Unit)</strong> (things are more complicated with modern processors), then we would
+			be more or less forced to perform each of the 51 million operations per second one after the other in series, but
+			if we were to implement it on a computer with a modern <strong>GPU (Graphics Processing Unit)</strong>, we could
+			perform many of the calculations at the same time that we are doing the calculations for other points in a
+			technique known as <strong>parallel processing</strong>. In addition, GPUs have hardware that is dedicated to
+			performing the matrix multiplication between a 4D vector and a 4x4 matrix, and so each of the calculations would
+			be faster than if they were done on a CPU. It is this technique, the leveraging of the GPU that both makes this
+			visualizer possible, and makes it rather complicated to implement.
+		</p>
+		<p>
+			&emsp;Since the CPU and the GPU are separate pieces of hardware, the code that is executed on each is written in
+			different languages. On the CPU side of the program, the instructions are written in JavaScript which drives the
+			process of giving data to the GPU and telling the GPU when to do the calculations and how to output the results.
+			The program that the GPU executes, known as a <strong>shader</strong>, is written in a programming language
+			designed for GPUs called openGL Shading Language or <strong>GLSL</strong> and tells the GPU how to receive data
+			from the CPU or other parts of the GPU and how to process the data that it receives. The relationship between
+			these two sections can be rather complex, but a rather good simplification is thinking of the CPU as giving the
+			overall instructions and the GPU as doing the actual work. As a side note, if you want to be technically correct
+			about the terminology, a GPU shader and GPU program are slightly different things, with a shader being the
+			compiled instructions for a single programmable stage in the graphics pipeline, while a program consists of the
+			compiled instructions for the whole graphics pipeline. This distinction is very slight however, and only exists
+			due to the nomenclature of certain APIs.
+		</p>
+		<p>
+			&emsp;To get an understanding of how to get the GPU to do what you want it to, you first have to get an idea of
+			the <strong>graphics pipeline</strong>. Essentially, the GPU doesn’t do all of the work at once, but rather does
+			different tasks in separate stages. Generally, all the GPU knows how to do is to take points that you give it and
+			connect them into shapes, so you have to provide all the other instructions. The first stage is the <strong>vertex
+				shader</strong> which takes the 3D positions of the stars and other information and outputs a 2D position with a
+			depth value. The way that this transformation is done is determined by the shader code that the programmer writes.
+			The next major step of the process is known as the <strong>fragment shader</strong> whose job it is to tell the
+			screen what color certain pixels should be. Since the fragment shader is executed once for every pixel that will
+			be drawn to the screen, they tend to be more lightweight than vertex shaders, but this isn’t true in all
+			situations such as ray tracing. Vertex shaders can also send information to fragment shaders and in the case where
+			there are multiple vertices making up the object (such as with a triangle), the values that each fragment shader
+			receives
+			is an interpolation of what the two vertex shaders output. While these are the two main stages, there can be other
+			steps such as geometry shaders, hull shaders, or compute shaders depending on which <strong>API</strong>
+			(Application Programming Interface) the programmer is using, but those aren’t used or even supported in the web
+			API (webgl2) that this visualizer uses.
+		</p>
+		<p>
+			&emsp;There are also optimizations that are done by the API between the vertex and fragment shaders. One of the
+			optimizations that is done is known as clipping, where points or even entire primitives that are outside of a
+			certain bounding box are thrown away. In many cases, the effect of this is to not waste further computation on
+			information that would have been drawn outside of what the viewer will be able to see. Another important
+			optimization is known as the early depth test. What this optimization does is compare the depth of a fragment that
+			will be drawn against the current depth buffer. If the fragment to be drawn is closer to the camera than the
+			current depth value is, then it will be drawn and the depth buffer will be updated, but if the fragment is further
+			away than the current depth value, then the GPU won’t waste computational resources and destroy what was already
+			there by rendering the new fragment. Unfortunately, while enabling depth testing did provide a noticeable speed
+			increase (~10ms less per frame when rendering ~1.5 million points), the reduced quality from having to disable
+			alpha
+			blending meant that I didn't consider it worth it to implement in the 1.1.0 update, though I am considering adding
+			it as a toggleable option in a future patch.
+		</p>
+		<p>
+			&emsp;Now that we have somewhat of an understanding of why we chose the design that we did and what the overall
+			process to implement it might look like, we can start stepping through what the visualizer does.
+		</p>
+		<p>
+			&emsp;The very first thing that the visualizer (or rather the browser) will do once you load the page is to load
+			all of the resources needed to draw the webpage. This is done in the order that the text appears in the source
+			HTML document, so the descriptions underneath the visualizer and the box that the visualizer is drawn in are the
+			first things to be loaded into your computer’s memory. The next thing that is loaded is the source code for the
+			shaders. After that, the main source code file is loaded and several set-up instructions are run. While the main
+			setup will happen a little bit later, many variables and arrays (long lists of variables that are grouped
+			together) are declared. At this point, the computer finds the box that the visualizer will be drawn in and puts it
+			in the correct drawing mode so that we can utilize the GPU for 3D graphics. At the very end of this initial
+			loading, the raw data for the various stars in the open clusters is loaded into memory, though it will have to go
+			through several transformations before it is fully usable.
+		</p>
+		<p>
+			&emsp;After the initial loading is completed, the program can now set up everything that it will need later.
+			First, the program makes sure that webgl2 is supported on the device and loads the extensions that it needs (alpha
+			blending to decrease the brightness of the wireframe reference spheres as they get further away from the camera).
+			The next step is to generate the points that make up the wireframes reference spheres. This isn’t hard in theory
+			since we already have a function that converts RA and DEC coordinates to x, y, z coordinates, but it takes quite a
+			bit of fiddling to make sure that the points are connected with lines in the way that you want. After that, the
+			position information for the stars in the clusters is extracted and added to an array. The colors that we want the
+			stars to be are also set here and stored along with the positions of the stars. Next, the shaders are compiled,
+			linked (where the partially compiled functions are combined into a single shader), and combined into a single
+			program. Finally, the program sets up the uniform buffers, the vertex buffers in the vertex array objects, and
+			starts the loops that will update and draw the scene.
+		</p>
+		<p>
+			&emsp;In the last paragraph, I mentioned the term buffer and vertex array object without explaining what they
+			were, something that I will remedy here. When the vertex shader executes, it needs data to work off of, and one of
+			the main ways that we send the data to the vertex shader is through the use of <strong>Buffers</strong>. While
+			there are several different kinds of buffers, the two kinds that the visualizer uses are known as <strong>Uniform
+				Buffers</strong> and <strong>Vertex Attribute Buffers</strong> (Also known as Vertex Buffer Objects or
+			<strong>VBO</strong>s). Uniform buffers contain information that is the same for every instance of a shader during
+			each frame. This is useful for giving the vertices information about the current position of the camera, the
+			dimensions of the screen, and the transformation matrix. Vertex Attribute Buffers on the other hand consist of
+			information (known as attributes) that either will or could be different for each vertex during a draw call.
+			Examples of things that you might want to put into a VBO could be the positions for the points, the colors of the
+			points, the brightness of what they represent, etc.
+		</p>
+		<p>
+			&emsp;Since WebGL2 is a rather low-level API, the way that the memory is organized also has to be specified. Since
+			the only thing that we are given is a stream of bits (1s or 0s in computer memory), there are many different ways
+			to organize those bits to represent numbers, positions, or other useful information. During the setup stage of the
+			program, this information is also set, so that the computer knows that we want to transfer bits arranged as
+			<strong>floating point number</strong> (a way of representing decimal numbers similar to scientific notation),
+			integers, booleans (true/false values), or any number of variations on the above data types. A full list can be
+			found on the <a href="https://www.khronos.org/opengl/wiki/Vertex_Specification#Component_type">specification
+				page</a>. During this step, we also indicate if we want to store single numbers in the buffer, to be interpreted
+			separately, or series of numbers to be interpreted as vectors in a higher dimensional space. In addition, there
+			are several low-level settings that need to be given such as what location in memory the attributes should be sent
+			to
+			so that the shaders can read them, if integer data should be normalized, if the data is expected to be changed
+			often, and the offset and stride of the data (used if attributes are interleaved within a single buffer rather
+			than
+			sent in separate buffers).
+		</p>
+		<p>
+			&emsp;Thankfully, we are now about halfway through the program, with only the drawing function interacting with
+			the GPU. The very first thing that the drawing function does is to resize the screen, so that there won’t be any
+			distortions or resolution changes if the browser window is resized. Next, the screen and depth buffer are cleared
+			so that previous frames won’t impact what will be drawn on the screen next. The bulk of the drawing function is
+			loading data into the uniform buffer and sending it to the GPU. If you read the mathematics section of the
+			description, it should be no surprise to you that the camera’s transformation matrix is passed to the
+			vertex shader. The third part, the dimensions of the screen, requires a little more effort to explain. After the
+			vertex shader is executed and the preprocessing stages are run, the coordinates of the points are in
+			<strong>Normalized Device Coordinates</strong> (NDC) where 0, 0 is the center of the screen, 1, 1 is the top right
+			corner, and -1, -1 is the lower left corner. The trick is that this is the same for all possible aspect ratios of
+			the viewport, which means that a square in NDC might appear as a horizontal rectangle for computer users, while
+			phone users might see the very same square as a vertical rectangle. Fortunately, this can be fixed by multiplying
+			one of the coordinates (x or y) by the aspect ratio. The visualizer also decides here which axis to stretch in
+			order to give the user the widest possible field of view (FOV). While this is not an issue that the visualizer has
+			to deal with after the 1.1.0 update, you should be warned that there is a small catch that the data has to be
+			aligned to 16 bytes. Since each number is a 4-byte float, this means that we have to give 4 of them for each row
+			in the matrix. This has the effect that any 3x3 matrix that we want to pass actually has to be transferred as a
+			3x4 matrix.
+		</p>
+		<p>
+			&emsp;At this point, the only thing left to do is to tell the API the viewport size, so that the visualizer fills
+			up the whole screen, and to actually draw the stars and spheres. As you may have noticed, the stars appear to be
+			single points, while the spheres are made of lines. During drawing, we tell the graphics API to combine the points
+			into different primitives so that both points and lines can be rendered. Since the stars and spheres use different
+			shaders, they cannot be drawn at the same time and one has to be drawn after and on top of the other. The way that
+			this visualizer went was to draw the spheres after the points and therefore always on top of the stars (you can
+			see this if you go very close to a point close to a reference sphere and line it up so that it is in front of the
+			reference sphere; the lines will be drawn over the star, even though they are further away). In order to prevent
+			the reference spheres from
+			crowding out the stars and to reduce how obvious the previous effect is, lines that are further away are rendered
+			as being more transparent so that only the closest few spheres are visible.
+		</p>
+		<p>
+			&emsp;Whew! That was a lot of very technical information about all of the hoops that have to be jumped through to
+			get the GPU to do what you want it to. If you don’t understand it after the first read, second read, or tenth
+			read, that is completely understandable; the only real way to understand it is to use the API and make a lot of
+			mistakes multiple times. If you get a good understanding of it, you should feel proud of yourself, very few will
+			dispute the fact that computer graphics is tricky to learn and counterintuitive at points.
+		</p>
+		<p>
+			&emsp;The remainder of the code is purely on the CPU side of things and exists only to implement user interaction
+			and provide helper functions such as matrix multiplication or coordinate transformations. If you are interested in
+			looking through the code for yourself, you can view the source code by pressing ctrl+u or the f12 key, or contact
+			me using the email address at the bottom of this explanation.
+		</p>
+		<button class="h3Button toggler">1.1.0 update addendum</button>
+		<div class="inDepth">
+			<p>
+				&emsp;During the development of the 1.1.0 update, I decided to stretch the capabilities of the renderer and see
+				how many stars it could display. After adding 200,000 stars, there was noticeable stuttering from certain
+				perspectives and the increase to 1.5 million stars made it much more apparent. The main solution to this problem
+				was to reduce the number of stars that are being drawn, since the limiting factor for the visualizer’s
+				performance is likely the fill rate of the GPU. The big question that needed to be answered is how, since simply
+				drawing only a fraction of the stars makes space appear less dense than it actually is. Eventually, the solution
+				that I decided to use was to organize the stars in an octree.
+			</p>
+			<p>
+				&emsp;What is an octree? In essence, an octree is a data structure that recursively divides a cubic space.
+				Imagine that you have a large cube (the space the points could be in also known as the domain) filled with
+				points. To construct the octree, you count the number of points in the space and see if it is greater than a
+				certain cutoff point (say 1). If it is, then you divide the large cube into 8 non-overlapping smaller cubes with
+				one at each of the corners. Then, for each of these smaller cubes, you run the same process of counting the
+				number of points in them and subdividing them if they have more than the cutoff amount. At the end of this
+				process, you will have lots of cubes within cubes and the smallest cubes (known as the leaves of the octree)
+				will either contain 1 point or no points.
+			</p>
+			<p>
+				&emsp;While the visualizer is loading and displaying the message “constructing octree”, it is performing the
+				process, though in a slightly modified manner. Instead of loading all the points into the parent node and then
+				subdividing, it adds the points one at a time to the octree and checks if the number of points is greater than
+				or equal to 40,000. If it is, it then creates new octree nodes, moves the points that it used to contain to
+				their new nodes and moves on to the next point to add. Assuming that stars are distributed relatively evenly in
+				space, each node should contain more than 5,000 points which means we aren’t making too many draw calls which
+				would negatively impact performance. You can see the boundaries of each node by toggling the octree node
+				boundary rendering option in the graphics settings to on. Once all the points have been added, the nodes are
+				free to construct their own buffers and VAOs.
+			</p>
+			<p>
+				&emsp;Now that we have a spatial partitioning system, we can check to see if the node is greater than a certain
+				distance from the camera. If it is, the user probably isn’t too interested in that particular section of space
+				and we don’t have to waste time drawing it. That cutoff point is determined by the chunk rendering distance
+				slider in the graphics settings. A better solution would be rendering a lower level of detail instead of not
+				rendering the chunk at all, but that hasn’t been implemented as of writing this. Another slight optimization we
+				can perform is to check if the node is visible before drawing it, so that we aren’t wasting effort calling the
+				vertex shader for points that won’t be visible. However, since it is somewhat complicated to determine if a cube
+				is visible once it is projected (what I did was project each of the vertices, connect them with lines to the
+				vertices on the opposite side of the cube, and see if those lines intersect the boundaries of the screen), and
+				CPUs aren’t anywhere as fast as matrix multiplication as GPUs, this doesn’t really provide that much of a
+				speedup.
+			</p>
+		</div>
+	</div>
+	<h4>Questions, comments, and suggestions can be sent to mdsgo@jhu.edu</h4>
+	<h4>Acknowledgements and other resources:</h4>
+	<div id="acknowledgements">
+		<ul>
+			<li>
+				<p>
+					This project has made use of the SIMBAD database, operated at CDS, Strasbourg, France<br>
+					<a href="http://adsabs.harvard.edu/abs/2000A%26AS..143....9W">2000,A&AS,143,9</a> The SIMBAD astronomical
+					database,
+					Wenger et al.
+				</p>
+				<p>
+					<a href="http://simbad.u-strasbg.fr/simbad/">http://simbad.u-strasbg.fr/simbad/</a> The SIMBAD database query
+					website
+				</p>
+			</li>
+			<li>
+				<p>
+					This research has made use of "Aladin sky atlas" developed at CDS, Strasbourg Observatory, France
+				</p>
+				<p>
+					<a href="https://ui.adsabs.harvard.edu/abs/2022ASPC..532....7B/abstract">2022ASPC..532....7B</a> (Aladin Lite
+					v3)
+				</p>
+			</li>
+			<li>
+				<p>
+					This work has made use of data from the European Space Agency (ESA) mission <i>Gaia</i> (<a
+						href="https://www.cosmos.esa.int/gaia">https://www.cosmos.esa.int/gaia</a>), processed by the <i>Gaia</i>
+					Data
+					Processing and Analysis Consortium (DPAC, <a
+						href="https://www.cosmos.esa.int/web/gaia/dpac/consortium">https://www.cosmos.esa.int/web/gaia/dpac/consortium</a>).
+					Funding for the DPAC has been provided by national institutions, in particular the institutions participating
+					in the <i>Gaia</i> Multilateral Agreement.
+				</p>
+				<p>
+					Gaia Collaboration, T. Prusti, J.H.J. de Bruijne, et al. (2016b) The Gaia mission. A&A 595, pp. A1. External
+					Links: <a href="http://adsabs.harvard.edu/abs/2016A%26A...595A...1G">ADS entry</a>, <a
+						href="http://dx.doi.org/10.1051/0004-6361/201629272">Document</a>, <a
+						href="https://arxiv.org/abs/1609.04153">1609.04153</a>
+				</p>
+				<p>
+					Link to the database portal: <a
+						href="https://gea.esac.esa.int/archive/">https://gea.esac.esa.int/archive/</a><br>
+					Papers related to work done by the visualizer:
+				</p>
+				<p>
+					Gaia Collaboration, A. Vallenari, A. G. A. Brown, et al. (2022k) Gaia Data Release 3: Summary of the content
+					and survey properties. arXiv e-prints, pp. arXiv:2208.00211. External Links: <a
+						href="https://arxiv.org/abs/2208.00211">2208.00211</a>, <a
+						href="https://ui.adsabs.harvard.edu/abs/2022arXiv220800211G">ADS entry</a>
+				</p>
+				<p>
+					C. Babusiaux, C. Fabricius, S. Khanna, et al. (2022) Gaia Data Release 3: Catalogue Validation. arXiv
+					e-prints, pp. arXiv:2206.05989. External Links: <a href="https://arxiv.org/abs/2206.05989">2206.05989</a>, <a
+						href="https://ui.adsabs.harvard.edu/abs/2022arXiv220605989B">ADS entry</a>
+				</p>
+				<p>
+					Gaia Collaboration, S. A. Klioner, L. Lindegren, et al. (2022g) Gaia Early Data Release 3: The celestial
+					reference frame (Gaia-CRF3). arXiv e-prints, pp. arXiv:2204.12574. External Links: <a
+						href="https://arxiv.org/abs/2204.12574">2204.12574</a>, <a
+						href="https://ui.adsabs.harvard.edu/abs/2022arXiv220412574G">ADS entry</a>
+				</p>
+				<p>
+					L. Lindegren, U. Bastian, M. Biermann, et al. (2021a) Gaia Early Data Release 3. Parallax bias versus
+					magnitude, colour, and position. A&A 649, pp. A4. External Links: <a
+						href="http://dx.doi.org/10.1051/0004-6361/202039653">Document</a>, <a
+						href="https://arxiv.org/abs/2012.01742">2012.01742</a>, <a
+						href="https://ui.adsabs.harvard.edu/abs/2021A&A...649A...4L">ADS entry</a>
+				</p>
+			</li>
+			<li>
+				<p>
+					The code for setting up the Uniform Buffer Object (UBO) was partially from a tutorial created by github user
+					jialiang
+				</p>
+				<p>
+					Link: <a
+						href="https://gist.github.com/jialiang/2880d4cc3364df117320e8cb324c2880">https://gist.github.com/jialiang/2880d4cc3364df117320e8cb324c2880</a>
+				</p>
+			</li>
+			<li>
+				<p>
+					To learn WebGL2 for yourself from the website that I learned from, try starting at <a
+						href="https://webgl2fundamentals.org/">webgl2fundamentals.org</a>
+				</p>
+			</li>
+			<li>
+				<p>
+					The API that this visualizer runs off of is the WebGL2 API mainatined by the Kronos group.
+				</p>
+				<p>
+					Link: <a
+						href="https://registry.khronos.org/webgl/specs/latest/2.0/">https://registry.khronos.org/webgl/specs/latest/2.0/</a>
+				</p>
+			</li>
+			<li>
+				<p>Some of the graphics of mathematical equations were produced using the typesetting system LaTeX using the
+					CodeCogs equation editor.</p>
+				<p>Link to the LaTeX project website: <a
+						href="https://www.latex-project.org/">https://www.latex-project.org/</a></p>
+				<p>Link to the CodeCogs equation editor website: <a
+						href="https://editor.codecogs.com/">https://editor.codecogs.com/</a></p>
+			</li>
+		</ul>
+	</div>
+	<h2>Visualizer Version: 1.1.1</h2>
+	<div id="changeLog">
+		<button class="toggler h2Button">Changelog</button>
+		<div class="inDepth">
+			<button class="toggler h3Button">V 1.0.1</button>
+			<div class="inDepth logEntry">
+				<ul>
+					<li>Fixed page scrolling up and down when up and down arrow keys are pressed.</li>
+					<li>Fixed known gramatical mistakes in descriptions.</li>
+					<li>Added vertical rotation limit when using arrow keys to prevent the camera being upside down.</li>
+					<li>Added a changelog.</li>
+					<li>Complete overhaul of how togglable text is implemented.</li>
+				</ul>
+			</div>
+			<button class="toggler h3Button">V 1.0.2</button>
+			<div class="inDepth logEntry">
+				<ul>
+					<li>Fixed issue where some keys would get stuck if you released then while holding shift.</li>
+					<li>Moved flag which controls if the introduction popup is shown from local storage to session storage. If you
+						want to learn what that means, check out this article on <a
+							href="https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage">MDN Web Docs</a>.</li>
+				</ul>
+			</div>
+			<button class="toggler h3Button">V 1.1.0 (released 3-14-2023)</button>
+			<div class="inDepth logEntry">
+				<ul>
+					<li>Added the positions of stars closer than 200 parsecs to earth (not including the sun) with
+						parallax_over_error >= 50 to include field stars (stars not in clusters).</li>
+					<li>Changed the projection code to use a slighly modified version of the method described in the mathematics
+						section of the description.</li>
+					<li>Changed data structure to utilize a octree format to allow for more optimizations.</li>
+					<li>Changed point rendering to utilize alpha blending for a more realistic effect.</li>
+					<li>Added CPU node culling so octree nodes that are not visible will not attempt to draw.</li>
+					<li>Added optimization where octree nodes further away than a set distance will not be drawn.</li>
+					<li>Added option to toggle the reference spheres to increase framerate.</li>
+					<li>Added option to toggle if the outlines of octree nodes are drawn if you want a peek behind the scenes.
+					</li>
+					<li>Added option to change the maximum distance from an octree node before it is not drawn.</li>
+					<li>Added option to change the zoom of the camera.</li>
+					<li>Added a togglable information side bar.</li>
+					<li>Added a loading screen.</li>
+					<li>Added addendums to the in-depth descriptions.</li>
+					<li>Added an icon to show where Earth is.</li>
+					<li>The visualizer now makes use of data from the Gaia mission and database</li>
+					<li>The visualizer now tells you what coordinates a star with your current position would have.</li>
+					<li>The visualizer can now be used using only a keyboard.</li>
+					<li>The visualizer can now be used using only a touchscreen device.</li>
+					<li>The visualizer can now be used using only a mouse.</li>
+					<li>Modified Acknowledgements section.</li>
+					<li>Modified controls explanations and descriptions.</li>
+				</ul>
+			</div>
+			<button class="toggler h3Button">V 1.1.1 (released 4-20-2023)</button>
+			<div class="inDepth logEntry">
+				<ul>
+					<li>Added the Aladin viewer to the webpage to show what that part of the sky looks like.</li>
+					<li>Added instructions for the Aladin viewer.</li>
+					<li>Added an addendum to the astronomy section.</li>
+					<li>Extended Field Stars out to parallax > 4, parallax/error > 40.</li>
+					<li>Changed how stars are determined to be part of an open cluster.</li>
+					<li>Modified rendering of the Earth to decrease with distance.</li>
+					<li>Modified Acknowldgements section.</li>
+					<li>Fixed the double rendering of stars in open clusters.</li>
+					<li>Fixed the loading screen becoming less responsive as more stars are loaded.</li>
+					<li>Fixed slight errors in spelling, the 1.1.0 translation matrix, and the distinction between a shader and a GPU program.</li>
+				</ul>
+			</div>
+
+		</div>
+	</div>
+
+
+
+	<script src="vertex shader.js"></script>
+	<script src="fragment shader.js"></script>
+	<script src="globes shaders.js"></script>
+
+	<script src="index.js"></script>
+	<script src="draw home.js"></script>
+	<script src="octree.js"></script>
+
+	<script src="clusterData/hyades.js"></script>
+	<script src="clusterData/Pleiades.js"></script>
+	<script src="clusterData/trapezium.js"></script>
+	<script src="clusterData/beehive.js"></script>
+	<script src="clusterData/double cluster.js"></script>
+	<script src="clusterData/Rosette.js"></script>
+	<script src="clusterData/coma.js"></script>
+	<script src="clusterData/M7.js"></script>
+	<script src="clusterData/Southern Pleiades.js"></script>
+	<script src="clusterData/IC 2391.js"></script>
+	<script src="clusterData/M39.js"></script>
+</body>
+
+</html>

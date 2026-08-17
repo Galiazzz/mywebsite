@@ -1,0 +1,19 @@
+body{
+    animation: fullRainbow 30s infinite;
+}
+
+#gridContainer {
+    display: grid;
+    grid: auto / auto auto auto auto;
+    gap: 10px;
+    background: aquamarine;
+    padding: 10px;
+    border: 5px solid rgb(24, 200, 142);
+}
+
+#gridContainer div {
+    background: rgb(0, 187, 187);
+    text-align: center;
+    padding: 10px;
+    border-radius: 20px;
+}

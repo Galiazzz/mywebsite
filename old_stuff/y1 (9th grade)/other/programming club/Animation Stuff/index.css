@@ -1,0 +1,16 @@
+body {
+    animation: fullRainbow 30s infinite;
+}
+
+canvas {
+    background: blue;
+    transition: .5s;
+    border: 5px solid black;
+    margin-left: 100px;
+}
+
+canvas:hover {
+    animation-name: simpleRainbow, leftToRight, roundChange;
+    animation-duration: 5s, 3s, 10s;
+    animation-iteration-count: infinite, infinite, infinite;
+}

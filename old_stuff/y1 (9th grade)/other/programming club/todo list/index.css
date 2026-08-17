@@ -1,0 +1,38 @@
+body {
+    background: linear-gradient(to bottom left, black, rgb(50, 50, 50));
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    text-align: center;
+}
+
+#input {
+    height: 50px;
+    width: 300px;
+    border: none;
+    border-radius: 5px;
+    margin: 0;
+    background: radial-gradient(rgb(200, 200, 200), white);
+}
+
+#go {
+    height: 50px;
+    widows: 40px;
+    border: none;
+    border-radius: 5px;
+    background: radial-gradient(rgb(200, 200, 200), white);
+    margin: 0;
+}
+
+#things {
+    margin: 0 auto;
+    margin-top: 10px;
+    width: 500px;
+    background: radial-gradient(rgb(200, 200, 200), white);
+    border-radius: 10px;
+    /*text-decoration: line-through;*/
+}
+
+.done {
+    background: red;
+    padding: 6px;
+}

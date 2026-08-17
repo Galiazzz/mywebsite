@@ -1,0 +1,143 @@
+body {
+    background-image: linear-gradient(to bottom left, black, rgb(50, 50, 50));
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+}
+
+#sideNav {
+    text-align: center;
+    position: fixed;
+    left: -250px;
+    transition: 0.5s;
+    padding: 20px;
+    width: 300px;
+    height: 100%;
+    background: black;
+    color: white;
+    font-size: 30px;
+    border-radius: 0, 5px, 5px, 0;
+}
+
+#sideNav:hover {
+    left: 0px;
+    overflow: scroll;
+}
+
+#sideNav p {
+    text-align: left;
+    font-size: 40px;
+    color: rgb(224, 23, 23);
+}
+
+::-webkit-scrollbar {
+    width: 0px;
+}
+
+a {
+    text-decoration: none;
+    color: blue;
+}
+
+a:hover {
+    text-decoration: underline;
+    color: green;
+}
+
+#sideNav ul li {
+    list-style: none;
+    margin-bottom: 20px;
+    transition: 0.2s;
+}
+
+#sideNav ul li:hover {
+    list-style: linear-gradient(to bottom right, red, blue);
+    margin-left: 20px;
+    /*transform: rotate(5deg);*/
+}
+
+#sideNav div ul {
+    margin-right: 67px;
+    text-align: center;
+}
+
+#calculator {
+    margin: 0 auto;
+    text-align: center;
+    background: rgb(60, 60, 60);
+    overflow: hidden;
+    height: 540px;
+    width: 350px;
+    border-radius: 20px;
+}
+
+#insideStuff{
+    margin: 20px;
+    border-radius: 20px;
+    background: grey;
+}
+
+div input {
+    background: coral;
+}
+
+button {
+    background: salmon;
+    color: black;
+    margin-right: 5px;
+    /*padding: 5px;*/
+    margin-bottom: 15px;
+}
+
+#lookingArea {
+    /*height: 200%;*/
+    width: auto;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+.hamburger {
+    background: rgb(122, 122, 122);
+    height: 10px;
+    width: 50px;
+    margin-bottom: 10px;
+    margin-left: 210px;
+}
+
+textarea {
+    position: absolute;
+}
+
+#usefulStuff li {
+    color: salmon;
+}
+
+#gridContainer {
+    /*
+    position: relative;
+    left: 520px;
+    */
+    margin: 0 auto;
+    height: 300px;
+    width: 200px;
+    display: grid;
+    grid: auto / auto auto auto;
+    /*background: blue;*/
+}
+
+#operations {
+    margin: 0 auto;
+    height: 80px;
+    width: 200px;
+    display: grid;
+    grid: auto / auto auto auto;
+}
+
+#other {
+    margin: 0 auto;
+    width: 100px;
+    height: 60px;
+    display: grid;
+    grid: auto / auto auto;
+}

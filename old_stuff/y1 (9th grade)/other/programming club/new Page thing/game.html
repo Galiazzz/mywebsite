@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="index.css">
+    <style>
+    canvas{
+        background-image: radial-gradient(green,blue);
+        margin-bottom: 40px;
+    }
+    </style>
+</head>
+<body onload="Load()">
+    <header>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+            </ul>
+        </nav>
+    </header>
+    <button onclick="//Load()">Begin</button>
+    <br><br>
+    <canvas height="500" width="500" id="gameArea"></canvas>
+    <script src="player.js"></script>
+    <script src="canAI.js"></script>
+    <script>
+        document.addEventListener("keydown",function(event){
+            switch(event.code){
+                case "ArrowUp" || "KeyW":
+                player.move(3);
+                player.doGrav = false;
+                player2.move(3);
+                player2.doGrav = false;
+                event.preventDefault();
+                break;
+                case "ArrowDown" || "KeyS":
+                player.move(4);
+                player2.move(4);
+                event.preventDefault();
+                break;
+                case "ArrowRight" || "KeyD":
+                player.move(1);
+                player2.move(1);
+                break;
+                case "ArrowLeft" || "KeyA":
+                player.move(2);
+                player2.move(2);
+                break;
+                default:break;
+                // 1 = right, 2 = left, 3 = up, 4 = down
+            }
+        },true)
+        var c = document.getElementById("gameArea");
+        var ctx = c.getContext("2d");
+
+        function Load(){
+            myGamePiece = new component(20, 20, 240, 240, "red");
+            player = new Player(240,240);
+            player2 = new Player(250,250)
+            player.gravitySpeed = 0;
+            setInterval(function() {    
+                player.update();
+                player2.update();
+            },10);
+            
+        }
+
+        function component(width, height, x, y, color) {
+            this.width = width;
+            this.height = height;
+            this.x = x;
+            this.y = y;
+            ctx = document.getElementById("gameArea").getContext("2d");
+            ctx.fillStyle = color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }   
+
+    </script>
+</body>
+</html>

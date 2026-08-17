@@ -1,0 +1,25 @@
+*{
+    height: 100%;
+    width: 100%;
+    margin: 0%;
+    padding: 0%;
+}
+
+#options{
+    background: lightgray;
+    position: absolute;
+    top: 0;
+    width: 300px;
+    transition: 2s;
+    left: -300px;
+}
+
+select, option{
+    height: 25px;
+    width: 100px;
+}
+
+p{
+    height: auto;
+    width: auto;
+}

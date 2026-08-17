@@ -1,0 +1,50 @@
+html, body{
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+}
+
+body{
+    background: #000020;
+    color: white;
+}
+
+textarea{
+    background: #000010;
+    border-color: #000000;
+    display: block;
+    color: white;
+}
+
+button{
+    background: #004000;
+    border-color: #000000;
+    border-radius: 10px;
+    margin: 20px;
+    padding: 10px;
+}
+
+#inputText{
+    width: 99%;
+}
+
+#ouputHex{
+    /*display: none;*/
+}
+
+#textArea{
+    background: #000010;
+    border: #000040 10px solid;
+    margin-bottom: 10px;
+    display: none;
+    width: 95%;
+    height: 80%;
+}
+
+#clipboardCopy{
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: -100;
+}

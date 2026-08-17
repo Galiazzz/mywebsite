@@ -1,0 +1,42 @@
+* {
+    height: 100%;
+    width: 100%;
+    margin: 0%;
+    padding: 0%;
+}
+
+body {
+    overflow: hidden;
+}
+
+canvas {
+    background: black;
+    z-index: 1;
+}
+
+div{
+    text-align: center;
+    position: absolute;
+    top: 10px;
+    height: auto;
+}
+
+h1 {
+    display: inline;
+    z-index: 2;
+    color: white;
+    margin-right: 20px;
+}
+
+button{
+    display: none;
+    position: absolute;
+    bottom: 3%;
+    right: 3%;
+    height: 100px;
+    width: 250px;
+    z-index: 3;
+    background: green;
+    font-size: 2em;
+    border-color: blue;
+}

@@ -1,0 +1,10 @@
+dimentions of image = 452 pixels (width) x 376 pixels (height)
+number of interior pixels = 102595
+dimentions of image on paper = 4.88 in (width) x 4 in (height)
+width of each pixel (wpp) = 4.88 in / 452 = 61/5650 in or aprox. 0.010796 in
+height of each pixel (hpp) = 4 in / 376 = 1/94 in or aprox. 0.10638 in
+area of each pixel (app) = wpp * hpp = 61 / 531100 in^2 or aprox. 1.14856 E-4 or basically very small
+area of interior pixels = app * 102595 = approx. 11.783647 in^2
+1 in = (almost exactly) 2.54 cm
+1 in^2 = 1 in * 1 in = 2.54 cm * 2.54 cm = 6.4516 cm^2 
+11.783647 in^2 * (6.4516 cm^2 / 1 in^2) = 76.023377 cm^2

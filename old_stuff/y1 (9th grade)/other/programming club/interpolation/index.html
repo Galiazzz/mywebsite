@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Interpolation</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body onload="Graph()">
+    <div id="options">
+        <p></p>
+        <select name="" id="type" oninput="Graph()">
+            <option value="cosine">cosine</option>
+            <option value="linear">linear</option>
+            <option value="Polynomial">Polynomial</option>
+        </select>
+        <select id="dimention" oninput="Graph()">
+            <option value="1">1</option>
+            <option value="2">2</option>
+        </select>
+    </div>
+    
+    <canvas id="canvas"></canvas>
+    <script src="index.js"></script>
+    <script src="../Libraries/Debug.js"></script>
+</body>
+</html>

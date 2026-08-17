@@ -1,0 +1,41 @@
+body {
+    background-image: linear-gradient(to bottom left, black, rgb(50, 50, 50));
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    text-align: center;
+}
+
+button {
+    background: salmon;
+    padding: 10px;
+}
+
+#calculatorBody {
+    position: absolute;
+    left: 500px;
+    right: 500px;
+    height: 600px;
+    width: 350px;
+    background: grey;
+    border: 5px solid black;
+    border-radius: 15px;
+    margin-top: 30px;
+}
+
+#screen {
+    margin-top: 20px;
+    margin-bottom: 50px;
+    width: 200px;
+    height: 70px;
+    font-size: 50px;
+}
+
+#buttonZone {
+    display: grid;
+    grid: auto / auto auto auto;
+    gap: 5px;
+}
+
+#buttonZone button {
+    background: salmon;
+}

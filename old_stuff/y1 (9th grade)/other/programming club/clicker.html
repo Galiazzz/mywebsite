@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Clicker</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        section ul{
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="index.html">Home</a>
+        <h1>Clicker</h1>
+    </header>
+    <section>
+        <button onclick="AddOne()">Click Me!!</button>
+        <input type="text" id="points">
+        <ul>
+            <li><input type="button" onclick="BuyAMachine()" id="clickerUpgrade"></input></li>
+        </ul>
+    </section>
+    <script>
+        var points = 0;
+        var clickPower = 1;
+        var clickUpgrades = 1;
+
+        document.getElementById("clickerUpgrade").value = "Clicker upgrade Cost: " + clickUpgrades * 10;
+        function AddOne(){
+            points += clickPower;
+            document.getElementById("points").value = "Points: " + points;
+        }
+        function BuyAMachine(){
+            if(points >= 10 * clickUpgrades + (clickUpgrades * 3)){
+                clickPower++;
+                points -= 10 * clickUpgrades + (clickUpgrades * 3);
+                clickUpgrades++;    
+                document.getElementById("points").value = "Points:  " + points;
+                document.getElementById("clickerUpgrade").value = "Clicker upgrade Cost: " + (clickUpgrades * 10 + (clickUpgrades * 3));
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Art Thing</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body onload="LoadStuff()">
+    <div id="images">
+        
+    </div>
+    <header>
+        <ul>
+            <li><a href="" id="download" onclick="Download()">Download</a></li>
+        </ul>
+    </header>
+    <div id="sideStuff">
+        <p style="color: red;">Red</p>
+        <input type="range" id="red" oninput="FindColor()" max="255" value="0">
+        <br>
+        <p style="color: rgb(0, 255, 0);">Green</p>
+        <input type="range" id="green" oninput="FindColor()" max="255" value="0">
+        <br>
+        <p style="color: blue;">Blue</p>
+        <input type="range" id="blue" oninput="FindColor()" max="255" value="0">
+        <br>
+        <p>Transparency</p>
+        <input type="range" id="transparency" oninput="FindColor()" max="100" value="100">
+        <hr>
+        <p>Is Background Transparent?</p>
+        <input type="checkbox" name="" id="backTrans" oninput="Transparent()">
+    </div>
+    <div id="canvasArea">
+        <canvas id="layer1"></canvas>
+    </div>
+    <script src="index.js"></script>
+</body>
+</html>

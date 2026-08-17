@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>eZ80 assembly to hex</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body onload="LoadStuff()">
+    <textarea id="clipboardCopy" cols="1" rows="1"></textarea>
+    <textarea id="inputText" cols="30" rows="30" placeholder="input Text"></textarea>
+    <canvas id="textArea"></canvas>
+    <textarea id="outputHex" cols="30" rows="10" placeholder="output Hex"></textarea>
+    <button onclick="CalculateHex()">Convert</button>
+    <button onclick="CopyTextToClipboard()">Copy Text To Clipboard</button>
+    <script src="index.js"></script>
+    <script src="includeFile.js"></script>
+</body>
+</html>

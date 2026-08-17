@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forces and change in anglar speed</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body onload="LoadStuff()">
+    <canvas id="canvas"></canvas>
+    <script src="index.js"></script>
+    <p>
+        Delta Time (s): <input type="number" id="dtIn" placeholder="delta time" value="0.01" oninput="UpdateValues()">
+        Value: <input type="text" readonly id="displaydt">
+    </p>
+    <p>Force Strength (N): <input type="range" id="Force" oninput="UpdateValues()" value="5">
+        Value: <input type="text" id="displayForce" readonly></p>
+    <p>
+        Mass (Kg): <input type="number" id="massIn" oninput="UpdateValues()" value="2">
+        Value: <input type="text" id="displayMass" readonly>
+    </p>
+    <p>
+        Radius (M): <input type="number" id="radiusIn" oninput="UpdateValues()" value="1">
+        Value: <input type="text" id="displayRadius" readonly>
+    </p>
+    <p>
+        Time to simulate (s): <input type="number" id="timeIn" oninput="UpdateValues()" value="0.5">
+    </p>
+    <button onclick="StartSimulation()">Start Simulation</button>
+    <p>
+        Simulation Time (s): <span id="displayTime">0s</span>
+    </p>
+    <button onclick="Reset()">Reset</button>
+    <p>
+        Perpendicular Forces: <input type="checkbox" id="perpForces" oninput="UpdateValues()">
+    </p>
+    <h3>Initial</h3>
+    <h4>Angular Positions:</h4>
+    <ul>
+        <li class="initialPos"></li>
+        <li class="initialPos"></li>
+        <li class="initialPos"></li>
+    </ul>
+    <h4>Angular Velocities:</h4>
+    <ul>
+        <li class="initialVel"></li>
+        <li class="initialVel"></li>
+        <li class="initialVel"></li>
+    </ul>
+    <h4>Angular accelerations:</h4>
+    <ul>
+        <li class="initialAcc"></li>
+        <li class="initialAcc"></li>
+        <li class="initialAcc"></li>
+    </ul>
+    <h3>Current</h3>
+    <h4>Angular Positions:</h4>
+    <ul>
+        <li class="currentPos"></li>
+        <li class="currentPos"></li>
+        <li class="currentPos"></li>
+    </ul>
+    <h4>Angular Velocities:</h4>
+    <ul>
+        <li class="currentVel"></li>
+        <li class="currentVel"></li>
+        <li class="currentVel"></li>
+    </ul>
+    <h4>Angular accelerations:</h4>
+    <ul>
+        <li class="currentAcc"></li>
+        <li class="currentAcc"></li>
+        <li class="currentAcc"></li>
+    </ul>
+    <h3>Change</h3>
+    <h4>Angular Positions:</h4>
+    <ul>
+        <li class="changePos"></li>
+        <li class="changePos"></li>
+        <li class="changePos"></li>
+    </ul>
+    <h4>Angular Velocities:</h4>
+    <ul>
+        <li class="changeVel"></li>
+        <li class="changeVel"></li>
+        <li class="changeVel"></li>
+    </ul>
+    <h4>Angular accelerations:</h4>
+    <ul>
+        <li class="changeAcc"></li>
+        <li class="changeAcc"></li>
+        <li class="changeAcc"></li>
+    </ul>
+</body>
+
+</html>

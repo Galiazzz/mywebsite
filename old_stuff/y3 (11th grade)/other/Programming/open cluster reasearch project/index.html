@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open cluster reasearch project</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body onload = "LoadStuff()">
+    <canvas id="canvas" onclick="CanvasClick()"></canvas>
+    <h3>Information:</h3>
+    <ul>
+        <li id="distance"></li>
+    </ul>
+    <h3>Legend:</h3>
+    <ul>
+        <li style="color:rgb(255, 128, 0);">Hyades</li>
+        <li style="color: rgb(0, 128, 255);">Pleiades</li>
+        <li style="color:rgb(255, 0, 0);">Trapezium</li>
+        <li style="color:rgb(255, 255, 0);">Beehive cluster</li>
+        <li style="color:rgb(255, 0, 255);">Double cluster</li>
+        <li style="color:rgb(255, 128, 128);">Cluster in the Rosette nebula</li>
+        <li style="color:rgb(0, 0, 255);">Coma star cluster</li>
+        <li style="color:rgb(128, 77, 0);">Messier 7</li>
+        <li style="color:rgb(0, 64, 128);">Southern Pleiades</li>
+        <li style="color:rgb(64, 128, 64);">IC 2391</li>
+        <li style="color:rgb(128, 25, 128);">Messier 39</li>
+    </ul>
+    <h4 style="color: rgb(0, 255, 0);">Spheres every 50 parsecs away from Earth</h4>
+    <h3>Controls:</h3>
+    <h4>Movement:</h4>
+    <ul>
+        <li>To move forward, press the "W" key</li>
+        <li>To move backward, press the "S" key</li>
+        <li>To move left, press the "A" key</li>
+        <li>To move right, press the "D" key</li>
+        <li>To move down, press the "SHIFT" key</li>
+        <li>To move up, press the "SPACE" key</li>
+    </ul>
+    <h4>To change the direction you are looking:</h4>
+    <ol>
+        <li>
+            Click the screen with your mouse cursor to "capture" the mouse. Now, you will look in the direction you move your mouse.
+            <br>
+            Ex: If you move your mouse right, you will look more right, if you move your mouse up, you will look more up, ect.
+        </li>
+        <li>
+            To use the keyboard to look around, use the Arrow keys:
+            <ul>
+                <li>To look up, press the "Arrow Up" key</li>
+                <li>To look down, press the "Arrow Down" key</li>
+                <li>To look right, press the "Arrow Right" key</li>
+                <li>To look left, press the "Arrow Left" key</li>
+            </ul>
+        </li>
+    </ol>
+    <h4>Other useful keys:</h4>
+    <ul>
+        <li>To move faster, press the "C" key</li>
+        <li>To move slower, press the "X" key</li>
+    </ul>
+    <h4 style="color: red;">Important Note:</h4>
+    <p>
+        Sometimes keys think they are still being pressed after you stop pressing them, causing you to keep moving in a certain way. 
+        To stop this, press the key again, and you should stop moving.
+    </p>
+    <h4>Acknowledgements:</h4>
+    <p>
+        This project has made use of the SIMBAD database, operated at CDS, Strasbourg, France
+        <br>
+        <a href="http://adsabs.harvard.edu/abs/2000A%26AS..143....9W">2000,A&AS,143,9</a> The SIMBAD astronomical database, Wenger et al.
+        <br>
+        <a href="http://simbad.u-strasbg.fr/simbad/">http://simbad.u-strasbg.fr/simbad/</a> The SIMBAD database query website
+        <br><br>
+        The code for setting up the Uniform Buffer Object (UBO) was partially from a tutorial created by github user jialiang
+        <br>
+        Link: <a href="https://gist.github.com/jialiang/2880d4cc3364df117320e8cb324c2880">https://gist.github.com/jialiang/2880d4cc3364df117320e8cb324c2880</a>
+    </p>
+    
+
+    <script src="vertex shader.js"></script>
+    <script src="fragment shader.js"></script>
+    <script src="globes shaders.js"></script>
+    
+    <script src="index.js"></script>
+
+    <script src="hyades.js"></script>
+    <script src="Pleiades.js"></script>
+    <script src="trapezium.js"></script>
+    <script src="beehive.js"></script>
+    <script src="double cluster.js"></script>
+    <script src="Rosette.js"></script>
+    <script src="coma.js"></script>
+    <script src="M7.js"></script>
+    <script src="Southern Pleiades.js"></script>
+    <script src="IC 2391.js"></script>
+    <script src="M39.js"></script>
+</body>
+</html>

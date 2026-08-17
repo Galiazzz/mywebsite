@@ -1,0 +1,33 @@
+body{
+    background: chocolate;
+    font-family: Arial, Helvetica, sans-serif;
+}
+a{
+    text-decoration: none;
+}
+a:hover{
+    text-decoration: underline;
+}
+header{
+    background: black;
+    color: white;
+    padding: 50px;
+}
+header .sidewaysList{
+    list-style: none;
+    display: flex;
+    flex: auto;
+}
+header .sidewaysList li{
+    margin-right: 30px;
+}
+section{
+    background: white;
+    padding: 30px
+}
+footer{
+    background: black;
+    color: rgb(52, 23, 133);
+    padding: 10px;
+    text-align: right;
+}

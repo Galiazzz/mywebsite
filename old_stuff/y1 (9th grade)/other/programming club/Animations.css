@@ -1,0 +1,87 @@
+@keyframes simpleRainbow {
+    from {
+        background: red;
+    }
+    50% {
+        background: green;
+    }
+    to {
+        background: red
+    }
+}
+
+@keyframes fullRainbow {
+    from {
+        background: red;
+    }
+    16% {
+        background: orange;
+    }
+    32% {
+        background: yellow;
+    }
+    48% {
+        background: green;
+    }
+    64% {
+        background: blue;
+    }
+    80% {
+        background: purple;
+    }
+    to {
+        background: red;
+    }
+}
+
+@keyframes leftToRight {
+    from {
+        margin-left: 100px;
+    }
+    50% {
+        margin-left: 400px;
+    }
+    to {
+        margin-left: 100px;
+    }
+}
+
+@keyframes roundChange {
+    from {
+        border-radius: 0%;
+    }
+    50% {
+        border-radius: 50%;
+    }
+    to {
+        border-radius: 0%;
+    }
+}
+
+@keyframes gradientGreyChange {
+    from {
+        background-image: linear-gradient(to bottom left, black, rgb(50, 50, 50));
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+    25% {
+        background-image: linear-gradient(to top left, black, rgb(50, 50, 50));
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+    50% {
+        background-image: linear-gradient(to top right, black, rgb(50, 50, 50));
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+    75% {
+        background-image: linear-gradient(to bottom right, black, rgb(50, 50, 50));
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+    to {
+        background-image: linear-gradient(to bottom left, black, rgb(50, 50, 50));
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+}

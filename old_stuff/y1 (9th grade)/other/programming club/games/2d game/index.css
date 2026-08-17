@@ -1,0 +1,51 @@
+* {
+    height: 100%;
+    width: 100%;
+    margin: 0%;
+    padding: 0%
+}
+
+body {
+    overflow: hidden;
+}
+
+#canvas {
+    height: 100%;
+    width: 100%;
+    z-index: -1;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+#lookingCanvas, #UI{
+    z-index: 2;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+#loadingScreen {
+    z-index: 1;
+    background: linear-gradient(to bottom left, black, rgb(50, 50, 50));
+    text-align: center;
+    color: white;
+    display: inline-block;
+}
+
+#loadingScreen h1, #loadingScreen h2{
+    height: auto;
+    width: auto;
+}
+
+h1{
+    font-size: 50px;
+}
+
+h2{
+    font-size: 35px;
+}
+
+#imageBank {
+    display: none;
+}

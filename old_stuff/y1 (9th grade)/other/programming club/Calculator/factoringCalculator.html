@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Factoring Calculator</title>
+    <link rel="stylesheet" href="index.css">
+    <style>
+        body{
+            text-align: center;
+            color: #888 /*rgb(100,100,100)*/;
+        }
+        #input{
+            width: 210px;
+            height: 50px;
+            margin-bottom: 20px;
+            margin-right: 20px;
+        }
+    </style>
+</head>
+
+<body onload="LoadStuff()">
+    <div id="sideNav">
+        <ul>
+            <div class="hamburger"></div>
+            <div class="hamburger"></div>
+            <div class="hamburger"></div>
+        </ul>
+
+        <div>
+            <p>Navigation</p>
+            <ul>
+                <li><a href="index.html">Standard Calculator</a></li>
+                <li><a href="#">Factoring Calculator</a></li>
+                <li><a href="graphingCalculator.html">Graphing Calculator</a></li>
+                <li><a href="mathBitsAndBobs.html">Math Bits and Bobs</a></li>
+            </ul>
+            <p>Useful Stuff</p>
+            <ul id="usefulStuff">
+                <li><button onclick="DisplayScratchPaper()">Open Scratch Paper</button></li>
+                <li><button onclick="CloseScratchPaper()">Close Scratch Paper</button></li>
+                <li><a href="controls.html">Controls</a></li>
+            </ul>
+        </div>
+    </div>
+    <h1>Enter a Number to Factor:</h1>
+    <button onclick="Factor(document.getElementById('input').value)">Factor!</button>
+    <button onclick="Clear()">Clear</button>
+    <br>
+    <input type="text" id="input">
+    <div id="numberArea"></div>
+    <textarea name="" id="scatchPaper" cols="50" rows="10" placeholder="This is scratch paper. Use the bottom-left hand corner to re-size me."></textarea>
+    <script src="factoringCalculator.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,42 @@
+body, html {
+    background: linear-gradient(to bottom left, black, rgb(50, 50, 50));
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+header {
+    background: black;
+    padding: 12px;
+    color: white;
+}
+
+h2, p{
+    color: white;
+}
+
+a{
+    color: royalblue;
+    text-decoration: none;
+}
+
+a:hover{
+    text-decoration: underline;
+    color: rgba(0, 255, 0, .3)
+}
+
+#pictures li{
+    display: inline-block;
+    margin: 20px;
+    list-style: none;
+}
+
+#pictures img{
+    height: 300px;
+    width: 300px;
+    border-radius: 50%;
+}

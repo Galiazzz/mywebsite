@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Website Thing</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <ul class="sidewaysList">
+            <li><a href="clicker.html">clicker</a></li>
+            <li><a href="">some thing</a></li>
+            <li><a href="">some other thing</a></li>
+        </ul>
+        <h1>Home</h1>
+    </header>
+    <section>
+        <p>this is a section</p>
+        <input type="text" id="nameBox" placeholder="enter your name">
+        <br>
+        <button style="margin-top:10px" onclick="SayHi()">Press me to have someone to say hi to you.</button>
+    </section>
+    <section>
+        <p>this is another section</p>
+    </section>
+    <footer>
+        <p>this is a footer</p>
+    </footer>
+    <script>
+        function SayHi(){
+            var name = document.getElementById("nameBox").value;//prompt("What is your name?");
+            alert("Hello \n" + name);
+            document.getElementById("nameBox").value = "hi";
+        }
+    </script>   
+</body>
+</html>

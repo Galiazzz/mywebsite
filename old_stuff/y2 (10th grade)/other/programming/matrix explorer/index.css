@@ -1,0 +1,46 @@
+html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0%;
+    padding: 0%;
+    overflow: hidden;
+}
+
+canvas {
+    height: 100%;
+    width: 100%;
+    background-color: black;
+}
+
+#inputBar {
+    text-align: center;
+    background-color: rgb(50, 50, 50);
+    height: 30%;
+    width: 100%;
+    transition: 500ms;
+    position: absolute;
+    top: 90%;
+}
+
+#inputBar:hover {
+    top: 70%;
+}
+
+#matrixValues {
+    margin-top: 5%;
+    list-style: none;
+    display: inline-block;
+}
+
+#goTransform{
+    background-color: green;
+    margin-left: 250px;
+    padding: 20px;
+}
+
+.mv{
+    background-color: orange;
+    height: 50px;
+    width: 50px;
+    font-size: 25px;
+}

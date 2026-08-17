@@ -1,0 +1,32 @@
+
+body{
+    background-image: linear-gradient(to bottom left,black,rgb(50,50,50));
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    color: aliceblue;
+    font-family: Arial, Helvetica, sans-serif;
+}
+h1{
+    margin-left: 300px;
+}
+table{
+    padding: 50px;
+}
+th{
+    padding: 15px;
+    height: 20px;
+    width: 40px;
+    border: 5px solid black;
+}
+td{
+    background: orange;
+    border: 2px solid black;
+}
+textarea{
+    width: 50px;
+    height: 50px;
+    background: orange;
+}
+#calender{
+    border: orangered,5px,solid;
+}

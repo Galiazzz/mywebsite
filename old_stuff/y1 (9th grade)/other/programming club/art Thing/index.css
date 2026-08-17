@@ -1,0 +1,74 @@
+* {
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background: rgb(210, 210, 210);
+    position: relative;
+    top: 0;
+    left: 0;
+}
+
+header ul li {
+    display: inline-block;
+    
+    margin: 10px;
+}
+
+#sideStuff {
+    background: rgb(100, 100, 100);
+    position: absolute;
+    height: 100%;
+    top: 54px;
+    left: -250px;
+    width: 300px;
+    transition: 1s;
+    text-align: center;
+}
+
+#sideStuff:hover {
+    left: 0px;
+}
+
+#canvasArea {
+    background: rgb(150, 150, 150);
+    position: absolute;
+    left: 300px;
+    top: 54px;
+    transition: 1s;
+    height: 100%;
+    width: 100%;
+}
+
+#canvasArea:hover {
+    left: 50px;
+}
+
+#colorPicker{
+    height: 100px;
+    width: 100px;
+}
+
+#sideStuff input{
+    height: 10px;
+    width: 250px;
+    margin: 0;
+}
+
+#sideStuff p{
+    height: auto;
+    width: auto;
+}
+
+#images{
+    display: none;
+}
+
+hr{
+    height: auto;
+    width: auto;
+}

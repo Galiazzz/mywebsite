@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Math Bits and Bobs</title>
+    <link rel="stylesheet" href="index.css">
+    <style>
+        body{
+            text-align: center;
+        }
+        textarea{
+           display: none;
+           position: absolute;
+           left: 50%;
+           margin-bottom: 50px;
+        }
+        h2{
+            color: aliceblue;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="sideNav">
+        <ul>
+            <div class="hamburger"></div>
+            <div class="hamburger"></div>
+            <div class="hamburger"></div>
+        </ul>
+
+        <div>
+            <p>Navigation</p>
+            <ul>
+                <li><a href="index.html">Standard Calculator</a></li>
+                <li><a href="factoringCalculator.html">Factoring Calculator</a></li>
+                <li><a href="graphingCalculator.html">Graphing Calculator</a></li>
+                <li><a href="#">Math Bits and Bobs</a></li>
+            </ul>
+            <p>Useful Stuff</p>
+            <ul id="usefulStuff">
+                <li><button onclick="DisplayScratchPaper()">Open Scratch Paper</button></li>
+                <li><button onclick="CloseScratchPaper()">Close Scratch Paper</button></li>
+                <li><a href="controls.html">Controls</a></li>
+            </ul>
+        </div>
+    </div>
+    <div>
+        <h2>Roots</h2>
+        <input type="text" id="rootBase" placeholder="base">
+        <input type="text" id="rootAmount" placeholder="amount">
+        <br>
+        <br>
+        <button onclick="CalcRoot()">Go!</button>
+        <br>
+        <input type="text" id="rootOutput" placeholder="output" readonly>
+    </div>
+    <br>
+    <hr>
+    <div>
+        <h2>Sines and Stuff</h2>
+        <ul>
+            <li><h3>Sines</h3></li>
+            <li><input type="text" id="sin" placeholder="sin"></li>
+            <li><h3>Cosines</h3></li>
+            <li><input type="text" id="cos" placeholder="cos"></li>
+            <li><h3>Tangents</h3></li>
+            <li><input type="text" id="tan" placeholder="tan"></li>
+        </ul>
+        <button onclick="SineStuff()">Go!</button>
+        <br>
+        <input type="text" id="SineStuffOutput" placeholder="output" readonly>
+    </div>
+    <br>
+    <hr>
+    <div>
+        <h2>Powers</h2>
+        <input type="text" id="powerBase" placeholder="base">
+        <input type="text" id="powerExponant" placeholder="exponant">
+        <br>
+        <br>
+        <button onclick="CalcEx()">Go!</button>
+        <br>
+        <input type="text" id="powerOutput" placeholder="output" readonly>
+    </div>
+    <br>
+    <hr>
+    <div>
+        <h2>Random Stuff</h2>
+        <ul>
+            <li><h3>1 to 0</h3></li>
+            <li><button onclick="Random('basic')">Go!</button></li>
+            <li><input type="text" id="randBasicOutput"></li>
+            <li><h3>your number to your number (decimals)</h3></li>
+            <li><input type="text" id="randDiciBase" placeholder="lower number"></li>
+            <li><input type="text" id="randDeciMult" placeholder="higher number"></li>
+            <li><button onclick="Random('deci')">Go!</button></li>
+            <li><input type="text" id="randDeciOutput" placeholder="output" readonly></li>
+            <li><h3>your number to your number (intigers)</h3></li>
+            <li><input type="text" id="randIntBase" placeholder="lower number"></li>
+            <li><input type="text" id="randIntMult" placeholder="higher number"></li>
+            <li><button onclick="Random('int')">Go!</button></li>
+            <li><input type="text" id="randIntOutput" placeholder="output" readonly></li>
+        </ul>
+    </div>
+    <br>
+    <hr>
+    <br>
+    <textarea name="" id="scratchPaper" cols="50" rows="10"
+        placeholder="This is scratch paper. Use the bottom-left hand corner to re-size me."></textarea>
+    <script src="mathBitsAndBobs.js"></script>
+</body>
+
+</html>

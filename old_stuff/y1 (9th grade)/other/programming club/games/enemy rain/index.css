@@ -1,0 +1,137 @@
+* {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+canvas {
+    background: black;
+    z-index: -1;
+}
+
+#home{
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    z-index: 1;
+    color: white;
+    text-align: center;
+}
+
+.homeStuff{
+    height: auto;
+    width: auto;
+}
+
+#home h1{
+    font-size: 50px;
+
+}
+
+#home button{
+    background: green;
+    height: 10%;
+    width: 15%;
+    position: absolute;
+    left: 43%;
+    top: 45%;
+}
+
+#deadButton{
+    z-index: -1;
+    background: red;
+    height: 10%;
+    width: 15%;
+    position: absolute;
+    left: 43%;
+    top: 45%;
+}
+
+#upgrades{
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: -1;
+    background: linear-gradient(to bottom left, black, rgb(50, 50, 50));
+    color: white;
+}
+
+#maxLives{
+    position: absolute;
+    left: 200px;
+    top: 0px;
+}
+
+#maxShots{
+    position: absolute;
+    left: 450px;
+    top: 0px;
+}
+
+#lifeUpgrade{
+    height: 7%;
+    width: auto;
+    padding: 10px;
+    position: absolute;
+    left: 2%;
+    top: 20%;
+}
+
+#shotUpgrade{
+    height: 7%;
+    width: auto;
+    padding: 10px;
+    position: absolute;
+    left: 15%;
+    top: 20%;
+}
+
+#continue{
+    background: green;
+    height: 10%;
+    width: 15%;
+    position: absolute;
+    left: 43%;
+    top: 10%;
+}
+
+#score {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    z-index: -1;
+    color: white;
+    margin: 0;
+}
+
+#level {
+    position: absolute;
+    left: 200px;
+    top: 0px;
+    z-index: -1;
+    color: white;
+    margin: 0;
+}
+
+#lives {
+    position: absolute;
+    left: 400px;
+    top: 0px;
+    z-index: -1;
+    color: white;
+    margin: 0;
+}
+
+#shots{
+    position: absolute;
+    left: 600px;
+    top: 0px;
+    z-index: -1;
+    color: white;
+}
