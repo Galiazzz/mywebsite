@@ -5,7 +5,7 @@ var magX = []
 var magY = []
 var magZ = []
 
-let magSensor = new Magnetometer({ frequency: 60 });
+let magSensor = new Magnetometer({ frequency: 10 });
 
 magSensor.addEventListener("reading", (e) => {
     magX.push(magSensor.x)
